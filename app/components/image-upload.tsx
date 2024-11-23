@@ -41,11 +41,11 @@ const ImageUpload: React.FC<Props> = ({ imageUrls, setImageUrls, handleImageChan
                     }}
                 </CldUploadWidget>
             </div>
-            <div className='grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-10'>
+            <div  >
                 {imageUrls.map((imageUrl, index) => (
-                    <div key={index} className='flex flex-col justify-center items-center'>
-                        <img src={imageUrl} className=' w-fit h-[150px] object-cover object-top' alt={`uploades Image ${index + 1}`} />
-                        <div className='border-[1px] rounded-lg mt-5 p-2 cursor-pointer' onClick={() => handleDeleteImage(index)}>delete</div>
+                    <div key={index} className='flex flex-col justify-center items-center pb-3'>
+                        <img src={imageUrl} className=' w-fit h-[300px] object-cover object-top' alt={`uploades Image ${index + 1}`} />
+                        <div className='rounded-lg mt-5 p-2 cursor-pointer text-red-500' onClick={() => handleDeleteImage(index)}>Remove</div>
                     </div>
                 ))}
             </div>

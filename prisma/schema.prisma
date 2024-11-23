@@ -45,6 +45,7 @@ model User {
   accounts      Account[]
   aerwork       Artwork[]
   social        Social[]
+  comment       Comment[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -77,7 +78,24 @@ model Artwork {
   description   String?
   image         String
   status        ArtStatus @default(Private)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  like      Int?
+  software String[]
+  tags     String[]
+  comment       Comment[]
+  
+  user User @relation(fields: [userId], references: [id])
+}
 
+model Comment {
+  id            String          @id @default(cuid())
+  artId         String
+  userId        String
+  comment       String?
+  reply         String?
+
+  artWork Artwork @relation(fields: [artId], references: [id])
   user User @relation(fields: [userId], references: [id])
 }
 

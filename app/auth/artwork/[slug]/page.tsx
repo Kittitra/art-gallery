@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+import { AiFillLike } from "react-icons/ai";
 import axios from 'axios';
 import { ArtStatus, UrlType } from '@prisma/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -12,6 +13,7 @@ import Link from 'next/link';
 import { InstagramLogoIcon, TwitterLogoIcon } from '@radix-ui/react-icons';
 import { FaDeviantart, FaFacebook, FaUser } from 'react-icons/fa';
 import FormSuccess from '@/app/components/formSuccess';
+import { MdOutlineComment } from "react-icons/md";
 
 
 interface Artwork {
@@ -21,6 +23,11 @@ interface Artwork {
   title: string;
   description: string;
   status: ArtStatus;
+  createdAt: string;
+  like: number;
+  software: string;
+  tags: string;
+  comment: Comment[]
 }
 
 interface Social {
@@ -38,9 +45,15 @@ interface User {
   headline: string;
 }
 
+interface Comment {
+  comment: string;
+  like: number;
+  reply: string
+}
+
 const ArtworkPage = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const [artworks, setArtworks] = useState<Artwork[]>([]);
+  const [artworks, setArtworks] = useState<Artwork>();
   const [url, setUrl] = useState<Social[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | undefined>("");
@@ -49,50 +62,36 @@ const ArtworkPage = () => {
 
   const currentUser = useCurrentUser();
 
-  const fetchUsers = async () => {
+  const fetchData = async () => {
     try {
-      const response = await axios.get('/api/user');
-      setUsers(response.data);
+      const [artworkRes, userRes, urlRes] = await Promise.all([
+        axios.get(`/api/artwork/${slug}`),
+        axios.get('/api/user'),
+        fetch('/api/social').then((res) => res.json()),
+      ]);
+      setArtworks(artworkRes.data);
+      setUsers(userRes.data);
+      setUrl(urlRes);
     } catch (err) {
-      setError('Failed to fetch user data');
-      console.error(err);
-    }
-  };
-
-  const fetchUrl = async () => {
-    try {
-      const response = await fetch('/api/social');
-      const result = await response.json();
-      setUrl(result);
-      console.log(result)
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const fetchArtworks = async () => {
-    try {
-      const response = await axios.get('/api/artwork');
-      setArtworks(response.data);
-    } catch (err) {
-      setError('Failed to fetch artwork data');
+      setError("Failed to fetch data");
       console.error(err);
     }
   };
 
   const handleUpdateStatus = async () => {
     try {
-      const response = await axios.put('/api/artwork', { id: slug });
+      const response = await axios.put(`/api/artwork/${slug}`, { id: slug });
       console.log("Update successful:", response.data.message);
       setSuccess("Publish Success");
-
-      fetchArtworks();
-    } catch (error) {
-      console.error("Error updating status:", error);
+      fetchData();
+    } catch (err) {
+      console.error("Error updating status:", err);
     }
   };
 
-  
+  useEffect(() => {
+    fetchData();
+  }, [slug]);
 
   const GenerateUrl = (type: string) => {
     if(type === UrlType.Facebook){
@@ -106,80 +105,51 @@ const ArtworkPage = () => {
     }
 };
 
-  useEffect(() => {
-    fetchArtworks();
-    fetchUsers();
-    fetchUrl();
-  }, []);
+
+  if (error) return <p className="text-red-500">{error}</p>;
+  if (!artworks) return <p className="h-screen p-10 text-xl font-bold">Loading...</p>;
+
+  const user = users.find((u) => u.id === artworks.userId);
+
+  const formattedDate = new Date(artworks.createdAt).toLocaleDateString('th-TH', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+
 
   return (
-      <div className="flex flex-row w-full h-fit gap-3 p-5">
-        <div className="w-full">
-          <div className="font-bold text-2xl">
-            {error && <p className="text-red-500">{error}</p>}
-            {artworks.length > 0 ? (
-              artworks.map((item) => {
-                if (item.id === slug) {
-                  return (
-                    <div key={item.id}>
-                      <Image 
-                        src={item.image} 
-                        alt={item.title}
-                        width={1920} 
-                        height={0} 
-                        className="w-full"
-                      />
-                    </div>
-                  );
-                }
-                return null;
-              })
-            ) : (
-              <p>Loading...</p>
-            )}
-          </div>
-        </div>
+    <div className="flex flex-row w-full h-fit gap-3 p-5">
+      {/* Artwork Content */}
+      <div className="w-full">
+        <Image
+          src={artworks.image}
+          alt={artworks.title}
+          width={1920}
+          height={1080}
+          className="object-cover"
+        />
+      </div>
+      {/* Sidebar */}
+      <div className="flex justify-center relative w-[70vh] bg-[#282828]">
+        <div className="flex flex-col rounded-md items-center gap-5 p-10 absolute w-full h-full overflow-y-scroll">
+          {user && (
+            <Link href={`/auth/profile/${user.id}`}>
+              <Avatar className="w-24 h-24">
+                <AvatarImage src={user.image || ""} />
+                <AvatarFallback className="bg-white">
+                  <FaUser className="text-black" />
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+          )}
+          <div className="text-xl font-semibold">{user?.name}</div>
+          <div>{user?.headline}</div>
+          {artworks.userId !== currentUser?.id && <Button>Follow</Button>}
 
-          <div className="flex flex-col bg-[#282828] rounded-md items-center gap-5 p-10 w-[70vh]">
-            {artworks.map((item) => {
-              if(item.id === slug) {
-                const user = users.find((u) => u.id === item.userId);
-
-                return(
-                  <div className='flex justify-center items-center flex-col gap-5'>
-                    {user && (
-                      <Link href={`/auth/profile/${user.id}`}>
-                          <Avatar className='w-24 h-24'>
-                              <AvatarImage src={user?.image || ""} />
-                                  <AvatarFallback className='bg-white'>
-                                      <FaUser className='text-black' />
-                                  </AvatarFallback>
-                          </Avatar>
-                      </Link>
-                        )}
-                    <div className='text-xl font-semibold'>
-                      {user?.name}
-                    </div>
-                    <div>
-                      {user?.headline}
-                    </div>
-                    {item.userId !== currentUser?.id && (
-                      <Button>
-                        Follow
-                      </Button>
-                    )}
-                    <div>
-                      <Button>
-                        Like
-                      </Button>
-                    </div>
-                  </div>
-                )
-              }
-            })}
-            <div className="text-xl">
+          <div className="text-xl">
               <i>Contract</i>
-            </div>
+          </div>
             <div className='flex flex-row gap-5 justify-around'>
                     {url.map((url, index) => (
                         <Link href={url.link} key={index} target='_blank'>
@@ -189,25 +159,74 @@ const ArtworkPage = () => {
                         </Link>
                     ))}
             </div>
-          {artworks.map((art, index) => {
-            if(art.status !== "Publish") {
-              return (
-                <div key={index}>
-                  <Button onClick={handleUpdateStatus}
-                  className='border border-white'>
-                    Change Artwork to Public
-                  </Button>
 
-                </div>
-              )
-            }
-          })}
+          <Button onClick={handleUpdateStatus}>
+            {artworks.status !== "Publish" ? "Make Public" : "Published"}
+          </Button>
           <FormSuccess message={success} />
-        </div>
 
+          <div className=" self-start">
+            <i className=' text-gray-500 font-semibold'>
+              Post At {formattedDate}
+            </i>
+          </div>
+
+          <p className='py-3'></p>
+
+          <div className="flex flex-row justify-betwwen items-center gap-14">
+            <div className='flex flex-row items-center gap-3'>
+              <AiFillLike style={{ width: "30px", height: "30px" }} /> {artworks.like} 2099
+            </div>
+
+            <div className='flex flex-row items-center gap-3'>
+              <MdOutlineComment style={{ width: "30px", height: "30px" }} /> {artworks.like} 2099
+            </div>
+          </div>
+
+          <p className='py-3'></p>
+
+          <div className=" self-start text-xl font-bold">
+            Software used
+            <div className='pt-3'>
+              - {artworks.software}
+            </div>
+          </div>
+
+          <p className='py-3'></p>
+
+          <div className="self-start text-xl font-light">
+            <div className=''>
+              Comments
+            </div>
+                {artworks.comment && artworks.comment.length > 0 ? (
+                  artworks.comment.map((item, index) => (
+                    <div key={index}>
+                      {item.comment || "null"} 
+                    </div>
+                  ))
+                ) : (
+                  <div>No comments available</div> 
+                )}
+              </div>
+
+              <p className='py-3'></p>
+
+              <div className=" self-start text-xl font-bold">
+                  Tags
+                  <div className='pt-5'>
+                    <Button className='bg-[#3f3f3f] text-lg flex justify-center  hover:!bg-[#373737] hover:!text-white'>
+                     # {artworks.tags}
+                    </Button>
+                  </div>
+                </div>
+
+        </div>
       </div>
-     
+    </div>
   );
 };
 
+
 export default ArtworkPage;
+
+

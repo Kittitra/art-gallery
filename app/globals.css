@@ -77,6 +77,27 @@ body {
   }
 }
 
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 5px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
 
 .hover-text {
   @apply cursor-pointer transition-all delay-100 hover:text-white
@@ -85,3 +106,4 @@ body {
 .DropdownMenuItem-bg {
   @apply bg-none text-lg flex justify-center  hover:!bg-[#373737] hover:!text-white
 }
+

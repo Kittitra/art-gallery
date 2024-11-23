@@ -27,6 +27,8 @@ export const UploadArt = z.object({
     }),
     description: z.string().optional(),
     image: z.string().url({ message: "image must be a valid URL" }),
+    software: z.array(z.string()),
+    tags: z.array(z.string()),
 })
 
 export const EditForm = z.object({

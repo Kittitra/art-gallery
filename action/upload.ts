@@ -10,14 +10,16 @@ export const upload = async (values: z.infer<typeof UploadArt>, userId: string) 
         return {error: "invalid fields"}
     }
 
-    const {title, description, image} = validateFields.data;
+    const {title, description, image, tags, software} = validateFields.data;
 
     await db.artwork.create({
         data: {
             title,
             description,
             image,
-            userId
+            userId,
+            tags,
+            software
         },
     })
 

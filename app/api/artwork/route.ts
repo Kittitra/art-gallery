@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { ArtStatus } from "@prisma/client";
+import { NextApiRequest, NextApiResponse } from "next";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
