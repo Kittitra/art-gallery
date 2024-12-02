@@ -13,7 +13,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   try {
     const artwork = await db.artwork.findUnique({
       where: { id },
-      include: { comment: true }, // รวมข้อมูล Comment
+      include: { comment: true, like: true }, // รวมข้อมูล Comment
     });
 
     if (!artwork) {

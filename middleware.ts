@@ -1,6 +1,6 @@
 import { authConfig } from "@/auth.config";
 import NextAuth from "next-auth";
-import { apiAuthPrefix, apiRoute, artworkRoute, authRoute, DEFAULT_LOGIN_REDIRECT, profileRoute, publicRoute } from "@/routes";
+import { apiAuthPrefix, apiRoute, artworkRoute, authRoute, DEFAULT_LOGIN_REDIRECT, LoggedInRoute, profileRoute, publicRoute } from "@/routes";
 import { NextResponse } from "next/server";
 
 // Use only one of the two middleware options below
@@ -20,6 +20,7 @@ export default auth((req) => {
   const isProfileRoute = nextUrl.pathname.startsWith(profileRoute);
   const isPublicRoute = publicRoute.includes(nextUrl.pathname);
   const isAuthRoute = authRoute.includes(nextUrl.pathname);
+  const isLoggedRoute = LoggedInRoute.includes(nextUrl.pathname);
 
   // Allow API auth route to continue without any restriction
   if (isApiAuthRoute || isApiRoute) {
@@ -36,9 +37,11 @@ export default auth((req) => {
   }
 
   // Redirect to login page if not logged in and not on a public route
-  if (!isLoggedIn && !isPublicRoute && !isArtworkRoute && !profileRoute) {
+  if (!isLoggedIn && !isPublicRoute && !isArtworkRoute && !isProfileRoute) {
     return NextResponse.redirect(new URL("/auth/login", nextUrl));
   }
+
+
 
   return NextResponse.next();
 });

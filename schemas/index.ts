@@ -38,10 +38,14 @@ export const EditForm = z.object({
     headline: z.string().min(1, {
         message: "require a headline"
     }),
-    image: z.string().url({ message: "image must be a valid URL" }),
+    image: z.string().url(),
 })
 
 export const SocialForm = z.object({
      type: z.string().min(1, "Social type is required."),
      link: z.string().min(1, { message: "Link must be a valid URL" }),
+})
+
+export const CommentSchema = z.object({
+    comment: z.string().min(1, "Add your comment"),
 })

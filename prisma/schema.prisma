@@ -41,11 +41,15 @@ model User {
   password      String?
   emailVerified DateTime?
   image         String?
+  followCount   Int @default(0)
   role          UserRole @default(USER)
   accounts      Account[]
   aerwork       Artwork[]
   social        Social[]
   comment       Comment[]
+  like          Like[]
+  followers   Follow[] @relation("UserFollowers")
+  following   Follow[] @relation("UserFollowing")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -78,14 +82,39 @@ model Artwork {
   description   String?
   image         String
   status        ArtStatus @default(Private)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  like      Int?
-  software String[]
-  tags     String[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  software      String[]
+  tags          String[]
+  likeCount   Int       @default(0)
   comment       Comment[]
-  
+  like          Like[]
+
   user User @relation(fields: [userId], references: [id])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  artworkId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  artwork Artwork @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, artworkId]) // ป้องกันการไลค์ซ้ำโดยผู้ใช้คนเดียวกัน
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String   // User who is following
+  followingId String   // User who is being followed
+  createdAt   DateTime @default(now())
+
+  follower    User     @relation("UserFollowers", fields: [followerId], references: [id])
+  following   User     @relation("UserFollowing", fields: [followingId], references: [id])
+
+  @@unique([followerId, followingId])
 }
 
 model Comment {
@@ -94,6 +123,8 @@ model Comment {
   userId        String
   comment       String?
   reply         String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   artWork Artwork @relation(fields: [artId], references: [id])
   user User @relation(fields: [userId], references: [id])

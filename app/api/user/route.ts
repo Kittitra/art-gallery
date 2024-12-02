@@ -5,7 +5,9 @@ import { NextResponse } from "next/server";
 export async function GET(req: Request) {
 
     try {
-        const user = await db.user.findMany();
+        const user = await db.user.findMany({
+            include: { like: true, comment: true }
+        });
 
         // ตรวจสอบว่าผู้ใช้ที่ค้นหามีอยู่หรือไม่
         if (!user) {
