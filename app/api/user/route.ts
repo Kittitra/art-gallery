@@ -6,7 +6,7 @@ export async function GET(req: Request) {
 
     try {
         const user = await db.user.findMany({
-            include: { like: true, comment: true }
+            include: { like: true, comment: true, followers: true, following: true }
         });
 
         // ตรวจสอบว่าผู้ใช้ที่ค้นหามีอยู่หรือไม่

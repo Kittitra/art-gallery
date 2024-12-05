@@ -4,6 +4,7 @@ import * as z from "zod";
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -17,6 +18,7 @@ import ImageUpload from "@/app/components/image-upload";
 import EditImage from "@/app/components/edit-image";
 import { FaSave } from "react-icons/fa";
 import FormSuccess from "@/app/components/formSuccess";
+import { FaUser } from 'react-icons/fa';
 import FormError from "@/app/components/formError";
 
 interface User {
@@ -100,14 +102,21 @@ const EditPage = () => {
     <div className='flex flex-row justify-between items-start p-10 px-[15rem] w-full '>
       <div className='flex flex-col w-full'>
         <div className='flex flex-row w-full gap-3'>
-          <Image 
+          {/* <Image 
             src={currentUser?.image || "/default-image.jpg"} 
             alt='User profile picture'
             className='w-[9rem] rounded-full'
             width={120} 
             height={120} // กำหนดความสูงให้ชัดเจน
             
-          />
+          /> */}
+          <Avatar className='w-[7rem] h-[7rem]'>
+              <AvatarImage src={imageUrls[0] || ''} 
+              className='object-cover'/> {/* แสดงเฉพาะภาพแรก */}
+              <AvatarFallback className='bg-white'>
+                  <FaUser className='text-black text-[3rem]' />
+              </AvatarFallback>
+          </Avatar>
           {user.map((item) => {
             if (item.id === currentUser?.id) {
               return (

@@ -16,7 +16,8 @@ export async function GET(req: NextRequest) {
       db.comment.findMany({
         skip: offset,
         take: limit,
-        orderBy: { createdAt: "desc" }, // เรียงตามเวลาที่สร้าง
+        orderBy: { createdAt: "desc" },
+        include: {user: true} // เรียงตามเวลาที่สร้าง
       }),
       db.comment.count(), // นับจำนวน comment ทั้งหมด
     ]);

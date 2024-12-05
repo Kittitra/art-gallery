@@ -23,6 +23,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { comment } from "@/action/comment";
 import { toggleLike } from "@/action/like";
 import { toggleFollow } from "@/action/follow";
+import { v4 as uuidv4 } from 'uuid';
 
 interface Artwork {
   id: string;
@@ -53,10 +54,12 @@ interface User {
   name: string;
   email: string;
   headline: string;
-  like: Like[]
-  followers: { id: string; name: string }[]; // Adjust based on actual relation shape
-  following: { id: string; name: string }[];
-  followCount: number;
+  like: Like[];
+  followers: { id: string; name: string }[]; // Users who follow this user
+  following: { id: string; name: string }[]; // Users this user is following
+  followCount: number; // Number of followers
+  isFollowing?: boolean; // Indicates if the current logged-in user follows this user
+  comment: Comment[];
 }
 
 interface Comment {
@@ -65,6 +68,7 @@ interface Comment {
   comment: string;
   like: number;
   reply: string
+  user: User[];
 }
 
 
@@ -186,7 +190,8 @@ const ArtworkPage = () => {
   if (error) return <p className="text-red-500">{error}</p>;
   if (!artworks) return <p className="h-screen p-10 text-xl font-bold">Loading...</p>;
 
-  const user = users.find((u) => u.id === artworks.userId);
+  const creater = users.find((u) => u.id === artworks.userId);
+
   const userLike = artworks.like.some((item) => item.userId === userId)
   
   const formattedDate = new Date(artworks.createdAt).toLocaleDateString('th-TH', {
@@ -195,24 +200,31 @@ const ArtworkPage = () => {
     year: 'numeric',
   });
 
-  const CommentItem: React.FC<{ comment: Comment; user: User }> = ({ comment, user }) => (
-    <div className="pb-5">
-      <div className="flex flex-row items-center gap-4">
-        <Avatar className="w-12 h-12">
-          <AvatarImage src={user?.image || ""} />
-          <AvatarFallback className="bg-white">
-            <FaUser className="text-black" />
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex flex-col gap-1">
-          <div className="font-semibold text-lg text-gray-500">{user?.name}</div>
-          <div className="font-medium text-xs">{comment.comment || ""}</div>
+  const CommentItem: React.FC<{ comment: Comment; }> = ({ comment }) => {
+    if(comment.artId === artworks.id) {
+      const user = users.find((u) => u.id === comment.userId)
+      return(
+        <div>
+          <div className="pb-5">
+            <div className="flex flex-row items-center gap-4">
+              <Avatar className="w-12 h-12">
+                <AvatarImage src={user?.image || ""} />
+                <AvatarFallback className="bg-white">
+                  <FaUser className="text-black" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col gap-1">
+                <div className="font-semibold text-lg text-gray-500">{user?.name}</div>
+                <div className="font-medium text-xs">{comment.comment || ""}</div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  );
+      )
+    }
+  };
 
-  if (!user) {
+  if (!creater) {
     return <p>Error: User not found.</p>;
   }
 
@@ -265,31 +277,63 @@ const ArtworkPage = () => {
     });
   };
 
-  const handleFollow = (targetUserId: string) => {
+  const handleFollow = async (targetUserId: string) => {
     if (isLikePending) return;
-  
-    startLikeTransition(async () => {
-      try {
-        await toggleFollow({
-          followingId: targetUserId,
-          followerId: userId,
-        });
-        
-        // Update local state
-        setUsers((prevUsers) =>
-          prevUsers.map((user) => {
-            if (user.id === targetUserId) {
-              return { ...user, followCount: user.followCount + 1 };
-            }
-            return user;
-          })
+
+    startFollowTransition( async() => {
+
+      // Optimistic UI update
+      setFollow((prevFollow) => {
+        const isFollowing = prevFollow.some(
+          (item) => item.followingId === targetUserId
         );
-        
+      
+        if (isFollowing) {
+          return prevFollow.filter((item) => item.followingId !== targetUserId);
+        } else {
+          return [
+            ...prevFollow,
+            {
+              id: uuidv4(),
+              followerId: userId,
+              followingId: targetUserId,
+              createdAt: new Date(),
+            },
+          ];
+        }
+      });
+
+      try {
+        await toggleFollow({ followerId: userId, followingId: targetUserId });
       } catch (error) {
         console.error("Error toggling follow:", error);
+        // Revert optimistic update if API fails
+        setFollow((prevFollow) => {
+          const isFollowing = prevFollow.some(
+            (item) => item.followingId === targetUserId
+          );
+        
+          if (isFollowing) {
+            return prevFollow.filter((item) => item.followingId !== targetUserId);
+          } else {
+            return [
+              ...prevFollow,
+              {
+                id: uuidv4(),
+                followerId: userId,
+                followingId: targetUserId,
+                createdAt: new Date(),
+              },
+            ];
+          }
+        });
       }
-    });
+    })
+  
+  
   };
+  
+  
   
   return (
     <div className="flex flex-row w-full h-full gap-3 p-5">
@@ -306,32 +350,33 @@ const ArtworkPage = () => {
       {/* Sidebar */}
       <div className="flex justify-center relative w-[70vh] bg-[#282828] h-full">
         <div className="flex flex-col rounded-md items-center gap-5 p-10 absolute w-full h-full overflow-y-scroll">
-          {user && (
-            <Link href={`/auth/profile/${user.id}`}>
+          {creater && (
+            <Link href={`/auth/profile/${creater.id}`}>
               <Avatar className="w-24 h-24">
-                <AvatarImage src={user.image || ""} />
+                <AvatarImage src={creater.image || ""} />
                 <AvatarFallback className="bg-white">
                   <FaUser className="text-black" />
                 </AvatarFallback>
               </Avatar>
             </Link>
           )}
-          <div className="text-xl font-semibold">{user?.name}</div>
-          <div>{user?.headline}</div>
+          <div className="text-xl font-semibold">{creater?.name}</div>
+          <div>{creater?.headline}</div>
           {artworks.userId !== currentUser?.id && (
            <Button
-              className={`border border-white cursor: ${isLikePending ? "not-allowed" : "pointer"}`}
+              className={`border border-white ${isLikePending ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
               onClick={() => handleFollow(artworks.userId)}
-              disabled={isLikePending}
+              disabled={isFollowPending}
             >
               {follow.some(
-                (item) => item.followerId === userId && item.followingId === artworks.userId
+                (item) => item.followingId === artworks.userId && userId // fix
               ) ? (
                 <div>Unfollow</div>
               ) : (
                 <div>Follow</div>
               )}
             </Button>
+         
           )}
 
           <div className="text-xl">
@@ -414,7 +459,7 @@ const ArtworkPage = () => {
                   .filter((comment) => comment.artId === artworks.id) // Filter comments for this artwork
                   .slice(0, visibleCount)
                   .map((comment, index) => (
-                    <CommentItem key={index} comment={comment} user={user} />
+                    <CommentItem key={index} comment={comment}  />
                   ))
               ) : (
                 <p className=" text-lg font-semibold text-gray-200">No comments yet. Be the first to comment!</p>
