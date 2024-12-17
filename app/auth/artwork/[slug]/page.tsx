@@ -11,19 +11,21 @@ import { ArtStatus, UrlType, Like, Follow } from '@prisma/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import Link from 'next/link';
-import { InstagramLogoIcon, TwitterLogoIcon } from '@radix-ui/react-icons';
+import { CircleIcon, DotFilledIcon, InstagramLogoIcon, TwitterLogoIcon } from '@radix-ui/react-icons';
 import { FaDeviantart, FaFacebook, FaUser } from 'react-icons/fa';
 import FormSuccess from '@/app/components/formSuccess';
 import { MdOutlineComment } from "react-icons/md";
 import { Input } from '@/components/ui/input';
 import { Form, FormField, FormItem } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
-import { CommentSchema } from "@/schemas";
+import { CommentSchema, ReplySchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { comment } from "@/action/comment";
 import { toggleLike } from "@/action/like";
 import { toggleFollow } from "@/action/follow";
 import { v4 as uuidv4 } from 'uuid';
+import { reply } from "@/action/reply";
+import { GoDotFill } from "react-icons/go";
 
 interface Artwork {
   id: string;
@@ -63,9 +65,11 @@ interface User {
 }
 
 interface Comment {
+  id: string;
   artId: string;
   userId: string;
   comment: string;
+  parentId: string | null;
   like: number;
   reply: string
   user: User[];
@@ -77,6 +81,9 @@ const ArtworkPage = () => {
   const [artworks, setArtworks] = useState<Artwork>();
   const [follow, setFollow] = useState<Follow[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [replyVisible, setReplyVisible] = useState<{ [key: string]: boolean }>({});
+  // const [visibleReplies, setVisibleReplies] = useState(0); // จำนวน Reply ที่แสดงเริ่มต้น
+  const [commentId, setCommentId] = useState<string>("")
   const [visibleCount, setVisibleCount] = useState(3);
   const [loading, setLoading] = useState(false);
   const [url, setUrl] = useState<Social[]>([]);
@@ -99,12 +106,25 @@ const ArtworkPage = () => {
     },
   });
 
+  const formReply = useForm<z.infer<typeof ReplySchema>>({
+    resolver: zodResolver(ReplySchema),
+    defaultValues: {
+      comment: "",
+    },
+  });
+
+  
+  const CommentIdSet = (Cid: string) => {
+    setCommentId(Cid)
+  }
+
   const onSubmit = (values: z.infer<typeof CommentSchema>) => {
     setError("");
     setSuccess("");
 
+
     startTransition(() => {
-      comment(values, userId, artworks?.id as string)
+      comment(values, userId, artworks?.id as string )
         .then((data) => {
           setError(data?.error || "");
           fetchData();
@@ -116,6 +136,21 @@ const ArtworkPage = () => {
     });
 
     form.reset();
+  };
+
+  const onReply = async (values: z.infer<typeof ReplySchema>) => {
+    setError("");
+    setSuccess("");
+    startTransition(() => {
+      reply(values, userId, artworks?.id as string, commentId)
+        .then((data) => {
+          setError(data?.error || "");
+          fetchComments();
+          setReplyVisible((prev) => ({ ...prev, [commentId]: false })); // Close reply box
+        })
+        .catch(() => setError("Failed to add reply. Please try again."));
+    });
+    formReply.reset();
   };
 
   const fetchData = async () => {
@@ -187,10 +222,18 @@ const ArtworkPage = () => {
     setVisibleCount((prev) => prev + 5); // เพิ่มจำนวนที่จะแสดงทีละ 5
   };
 
+  const toggleReply = (commentId: string) => {
+    setReplyVisible((prev) => ({
+      ...prev,
+      [commentId]: !prev[commentId],
+    }));
+  };
+
   if (error) return <p className="text-red-500">{error}</p>;
   if (!artworks) return <p className="h-screen p-10 text-xl font-bold">Loading...</p>;
 
   const creater = users.find((u) => u.id === artworks.userId);
+  // const loadMoreReplies = () => setVisibleReplies((prev) => prev + 2);
 
   const userLike = artworks.like.some((item) => item.userId === userId)
   
@@ -200,11 +243,28 @@ const ArtworkPage = () => {
     year: 'numeric',
   });
 
-  const CommentItem: React.FC<{ comment: Comment; }> = ({ comment }) => {
-    if(comment.artId === artworks.id) {
-      const user = users.find((u) => u.id === comment.userId)
-      return(
+  const CommentItem: React.FC<{ comment: Comment; replies: Comment[] }> = ({ comment, replies }) => {
+    const [visibleReplies, setVisibleReplies] = useState<Record<string, number>>({}); // เก็บสถานะการมองเห็นของแต่ละคอมเมนต์
+    const user = users.find((u) => u.id === comment.userId);
+  
+    // กำหนดค่าเริ่มต้นสำหรับ Reply ที่แสดง
+    const initialRepliesToShow = 0;
+    const currentVisibleReplies = visibleReplies[comment.id] || initialRepliesToShow;
+  
+    const loadMoreReplies = () => {
+      setVisibleReplies((prev) => ({
+        ...prev,
+        [comment.id]: (prev[comment.id] || initialRepliesToShow) + 2,
+      }));
+    };
+  
+    // กรองคอมเมนต์ย่อยที่สัมพันธ์กับคอมเมนต์หลักนี้
+    const filteredReplies = replies.filter((r) => r.parentId === comment.id);
+  
+    if(artworks.id === comment.artId) {
+      return (
         <div>
+          {/* คอมเมนต์หลัก */}
           <div className="pb-5">
             <div className="flex flex-row items-center gap-4">
               <Avatar className="w-12 h-12">
@@ -219,10 +279,41 @@ const ArtworkPage = () => {
               </div>
             </div>
           </div>
+    
+          {/* คอมเมนต์ย่อย */}
+          <div className="ml-10">
+            {filteredReplies.slice(0, currentVisibleReplies).map((reply) => (
+              <div key={reply.id} className="flex flex-row items-center gap-4 mb-4">
+                <Avatar className="w-10 h-10">
+                  <AvatarImage src={users.find((u) => u.id === reply.userId)?.image || ""} />
+                  <AvatarFallback className="bg-white">
+                    <FaUser className="text-black" />
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col gap-1">
+                  <div className="font-semibold text-lg text-gray-500">
+                    {users.find((u) => u.id === reply.userId)?.name}
+                  </div>
+                  <div className="font-medium text-xs">{reply.comment || ""}</div>
+                </div>
+              </div>
+            ))}
+    
+            {/* ปุ่ม Load More Replies */}
+            {filteredReplies.length > currentVisibleReplies && (
+              <div
+                onClick={loadMoreReplies}
+                className="text-sm text-gray-500 cursor-pointer mb-2 flex flex-row ml-24 mt-3"
+              >
+                Load More Replies
+              </div>
+            )}
+          </div>
         </div>
-      )
+      );
     }
   };
+
 
   if (!creater) {
     return <p>Error: User not found.</p>;
@@ -332,183 +423,219 @@ const ArtworkPage = () => {
   
   
   };
+
+  function isValidUrl(string: string) {
+    try {
+      // ใช้ URL constructor เพื่อตรวจสอบว่าเป็น URL ที่ถูกต้อง
+      new URL(string);
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
   
-  
+  const splitImage = (inputString: string) => {
+    // แยกข้อความด้วยเครื่องหมายจุลภาค
+    const urls = inputString.split(',');
+    
+    // ตัดช่องว่างรอบๆออก และกรองเฉพาะที่เป็น URL
+    return urls.map(url => url.trim()).filter(url => isValidUrl(url));
+  }
+
+  const imageUrls = splitImage(artworks.image)
+
+  const CommentList: React.FC<{ comments: Comment[]; artworks: Artwork }> = ({ comments, artworks }) => {
+  const rootComments = comments.filter((c) => c.parentId === null);
+
+  return (
+    <div >
+      {rootComments.map((comment) => (
+        <CommentItem
+          key={comment.id}
+          comment={comment}
+          replies={comments} // ส่งคอมเมนต์ทั้งหมดให้แต่ละ `CommentItem`
+        />
+      ))}
+    </div>
+  );
+};
+
   
   return (
-    <div className="flex flex-row w-full h-full gap-3 p-5">
-      {/* Artwork Content */}
-      <div className="w-full h-full">
-        <Image
-          src={artworks.image}
-          alt={artworks.title}
-          width={1920}
-          height={1080}
-          className="object-cover"
-        />
-      </div>
-      {/* Sidebar */}
-      <div className="flex justify-center relative w-[70vh] bg-[#282828] h-full">
-        <div className="flex flex-col rounded-md items-center gap-5 p-10 absolute w-full h-full overflow-y-scroll">
-          {creater && (
-            <Link href={`/auth/profile/${creater.id}`}>
-              <Avatar className="w-24 h-24">
-                <AvatarImage src={creater.image || ""} />
-                <AvatarFallback className="bg-white">
-                  <FaUser className="text-black" />
-                </AvatarFallback>
-              </Avatar>
-            </Link>
-          )}
-          <div className="text-xl font-semibold">{creater?.name}</div>
-          <div>{creater?.headline}</div>
-          {artworks.userId !== currentUser?.id && (
-           <Button
-              className={`border border-white ${isLikePending ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
-              onClick={() => handleFollow(artworks.userId)}
-              disabled={isFollowPending}
-            >
-              {follow.some(
-                (item) => item.followingId === artworks.userId && userId // fix
-              ) ? (
-                <div>Unfollow</div>
-              ) : (
-                <div>Follow</div>
-              )}
-            </Button>
-         
-          )}
-
-          <div className="text-xl">
-              <i>Contract</i>
-          </div>
-            <div className='flex flex-row gap-5 justify-around'>
-                    {url.map((url, index) => (
-                        <Link href={url.link} key={index} target='_blank'>
-                            <div > 
-                                {GenerateUrl(url.type)}
-                            </div>
-                        </Link>
-                    ))}
-            </div>
-
-          {artworks.status === ArtStatus.Private && (
-            <Button onClick={handleUpdateStatus}>
-              Publish
-            </Button>
-          )}
-          
-          <FormSuccess message={success} />
-
-          <div className=" self-start">
-            <i className=' text-gray-500 font-semibold'>
-              Post At {formattedDate}
-            </i>
-          </div>
-
-          <p className='py-3'></p>
-
-          <div className="flex flex-row justify-betwwen items-center gap-14">
-            <div className='flex flex-row items-center gap-3'>
-              
-            <button
-              onClick={handleLike}
-              disabled={isLikePending}
-              style={{
-                backgroundColor: "transparent",
-                border: "none",
-                cursor: isLikePending ? "not-allowed" : "pointer",
-              }}
-            >
-              <AiFillLike
-                style={{
-                  width: "30px",
-                  height: "30px",
-                  color: userLike ? "gray" : "white",
-                }}
+    <div className="w-full min-h-screen">
+      <div className="flex flex-row w-full h-full gap-3 p-5">
+        {/* Artwork Content */}
+        <div className="w-full h-full">
+          {imageUrls.map((artwork, index) => (
+            <div key={index} className="pb-5">
+              <Image
+                src={artwork}
+                alt={artworks.title}
+                width={1920}
+                height={1080}
+                className="object-cover"
               />
-            </button>
-              {artworks.likeCount}
             </div>
+          ))}
+        </div>
+        {/* Sidebar */}
+        <div className="flex justify-center relative w-[70vh] bg-[#282828]">
+          <div className="flex flex-col rounded-md items-center gap-5 p-10 absolute w-full h-full overflow-y-scroll">
+            {creater && (
+              <Link href={`/auth/profile/${creater.id}`}>
+                <Avatar className="w-24 h-24">
+                  <AvatarImage src={creater.image || ""} />
+                  <AvatarFallback className="bg-white">
+                    <FaUser className="text-black" />
+                  </AvatarFallback>
+                </Avatar>
+              </Link>
+            )}
+            <div className="text-xl font-semibold">{creater?.name}</div>
+            <div>{creater?.headline}</div>
+            {artworks.userId !== currentUser?.id && (
+            <Button
+                className={`border border-white ${isLikePending ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                onClick={() => handleFollow(artworks.userId)}
+                disabled={isFollowPending}
+              >
+                {follow.some(
+                  (item) => item.followingId === artworks.userId && userId // fix
+                ) ? (
+                  <div>Unfollow</div>
+                ) : (
+                  <div>Follow</div>
+                )}
+              </Button>
+          
+            )}
 
-            <div className='flex flex-row items-center gap-3'>
-              <MdOutlineComment style={{ width: "30px", height: "30px" }} /> {filteredComments.length}
+            <div className="text-xl">
+                <i>Contract</i>
             </div>
-          </div>
-
-          <p className='py-3'></p>
-
-          <div className=" self-start text-xl font-bold">
-            Software used
-            <div className='pt-3'>
-              - {artworks.software}
-            </div>
-          </div>
-
-          <p className='py-3'></p>
-
-          <div className="self-start text-xl font-light">
-            <div>
-              <div className="text-gray-500 font-semibold pb-5">
-                {filteredComments.length} Comments
+              <div className='flex flex-row gap-5 justify-around'>
+                      {url.map((url, index) => (
+                          <Link href={url.link} key={index} target='_blank'>
+                              <div > 
+                                  {GenerateUrl(url.type)}
+                              </div>
+                          </Link>
+                      ))}
               </div>
 
-              {/* Filter and display comments for the current artwork */}
-              {comments.length > 0 ? (
-                comments
-                  .filter((comment) => comment.artId === artworks.id) // Filter comments for this artwork
-                  .slice(0, visibleCount)
-                  .map((comment, index) => (
-                    <CommentItem key={index} comment={comment}  />
-                  ))
-              ) : (
-                <p className=" text-lg font-semibold text-gray-200">No comments yet. Be the first to comment!</p>
-              )}
+            {artworks.status === ArtStatus.Private && (
+              <Button onClick={handleUpdateStatus}>
+                Publish
+              </Button>
+            )}
+            
+            <FormSuccess message={success} />
 
-              {/* Show more button */}
-              {visibleCount < comments.filter((comment) => comment.artId === artworks.id).length && (
-                <button onClick={handleLoadMore} className="text-sm font-semibold text-gray-500">
-                  Show More
-                </button>
-              )}
-            </div>
-          </div>
-            <div className='w-full'>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)}>
-                  <FormField
-                    control={form.control}
-                    name="comment"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="flex flex-row gap-3 w-full">
-                          <Input
-                            placeholder='Add your comment'
-                            {...field}
-                            disabled={isPending}
-                          />
-                          <Button>
-                            {isPending ? "Adding..." : "Add"}
-                          </Button>
-                        </div>
-                      </FormItem>
-                    )} />
-                </form>
-              </Form>
-              
+            <div className=" self-start">
+              <i className=' text-gray-500 font-semibold'>
+                Post At {formattedDate}
+              </i>
             </div>
 
-              <p className='py-3'></p>
+            <p className='py-3'></p>
 
-              <div className=" self-start text-xl font-bold">
-                  Tags
-                  <div className='pt-5'>
-                    <Button className='bg-[#3f3f3f] text-lg flex justify-center  hover:!bg-[#373737] hover:!text-white'>
-                     # {artworks.tags}
-                    </Button>
-                  </div>
+            <div className="flex flex-row justify-betwwen items-center gap-14">
+              <div className='flex flex-row items-center gap-3'>
+                
+              <button
+                onClick={handleLike}
+                disabled={isLikePending}
+                style={{
+                  backgroundColor: "transparent",
+                  border: "none",
+                  cursor: isLikePending ? "not-allowed" : "pointer",
+                }}
+              >
+                <AiFillLike
+                  style={{
+                    width: "30px",
+                    height: "30px",
+                    color: userLike ? "gray" : "white",
+                  }}
+                />
+              </button>
+                {artworks.likeCount}
+              </div>
+
+              <div className='flex flex-row items-center gap-3'>
+                <MdOutlineComment style={{ width: "30px", height: "30px" }} /> {filteredComments.length}
+              </div>
+            </div>
+
+            <p className='py-3'></p>
+
+            <div className=" self-start text-xl font-bold">
+              Software used
+              <div className='pt-3'>
+                - {artworks.software}
+              </div>
+            </div>
+
+            <p className='py-3'></p>
+
+            <div className="self-start text-xl font-light w-full">
+              <div>
+                <div className="text-gray-500 font-semibold pb-5">
+                  {filteredComments.length} Comments
                 </div>
 
+                {/* Filter and display comments for the current artwork */}
+                {comments.length > 0 ? (
+                    <CommentList comments={comments.slice(0, visibleCount)} artworks={artworks}  />
+                ) : (
+                  <p className=" text-lg font-semibold text-gray-200">No comments yet. Be the first to comment!</p>
+                )}
+
+                {/* Show more button */}
+                {visibleCount < comments.filter((comment) => comment.artId === artworks.id).length && (
+                  <button onClick={handleLoadMore} className="text-sm font-semibold text-gray-500">
+                    Show More
+                  </button>
+                )}
+              </div>
+            </div>
+              <div className='w-full'>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)}>
+                    <FormField
+                      control={form.control}
+                      name="comment"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex flex-row gap-3 w-full">
+                            <Input
+                              placeholder='Add your comment'
+                              {...field}
+                              disabled={isPending}
+                            />
+                            <Button>
+                              {isPending ? "Adding..." : "Add"}
+                            </Button>
+                          </div>
+                        </FormItem>
+                      )} />
+                  </form>
+                </Form>
+                
+              </div>
+
+                <p className='py-3'></p>
+
+                <div className=" self-start text-xl font-bold">
+                    Tags
+                    <div className='pt-5'>
+                      <Button className='bg-[#3f3f3f] text-lg flex justify-center  hover:!bg-[#373737] hover:!text-white'>
+                      # {artworks.tags}
+                      </Button>
+                    </div>
+                  </div>
+
+          </div>
         </div>
       </div>
     </div>

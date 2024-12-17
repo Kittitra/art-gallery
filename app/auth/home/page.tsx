@@ -45,6 +45,12 @@ function Homepage() {
     }
 };
 
+      
+  const dataWithFirstImage = artWorks.map(item => ({
+    ...item,
+    firstImage: item.image.split(',')[0]
+  }));
+
 
   useEffect(() => {
     getArtwork();
@@ -55,23 +61,23 @@ function Homepage() {
       <div className="text-2xl font-semibold">
         All Channels
       </div>
-      <div className='flex flex-row gap-1'>
-        {artWorks.map((items, index) => {
+      <div className='flex flex-row gap-1 flex-wrap'>
+        {dataWithFirstImage.map((items, index) => {
           if(items.status !== "Private") {
             return(
               <Link href={`/auth/artwork/${items.id}`}>
                 <div key={items.id} className='relative group '>
-                  <div className='w-[30rem] h-[25rem] relative overflow-hidden'>
+                    <div className='w-[28.8rem] h-[25rem] relative overflow-hidden'>
 
-                    <Image src={items.image} alt='' fill
-                    className="object-cover"
-                />
+                      <Image src={items.firstImage} alt='' fill
+                      className="object-cover"
+                  />
+                    </div>
+                  <div className="absolute flex items-end inset-0 bg-gradient-to-b from-transparent to-black opacity-0 group-hover:opacity-70 transition-opacity duration-300" key={index}>
+                          <span className="text-white text-lg font-semibold p-4">{items.title}</span>
                   </div>
-                <div className="absolute flex items-end inset-0 bg-gradient-to-b from-transparent to-black opacity-0 group-hover:opacity-70 transition-opacity duration-300" key={index}>
-                        <span className="text-white text-lg font-semibold p-4">{items.title}</span>
-                </div>
-                </div>
-            </Link>
+                  </div>
+              </Link>
             )
           }
         })}

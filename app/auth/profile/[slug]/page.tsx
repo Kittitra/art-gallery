@@ -83,6 +83,12 @@ export default function Page() {
             console.error(err);
         }
     };
+    
+    const dataWithFirstImage = artWorks.map(item => ({
+    ...item,
+    firstImage: item.image.split(',')[0]
+    }));
+      
 
     useEffect(() => {
         const fetchData = async () => {
@@ -120,14 +126,14 @@ export default function Page() {
           <div className="w-full p-10">
             <div className="font-bold text-2xl">Portfolio</div>
             {error && <p className="text-red-500">{error}</p>}
-            <div className="flex flex-row gap-1">
-                {artWorks.map((item) => {
+            <div className="flex flex-row gap-1 flex-wrap">
+                {dataWithFirstImage.map((item) => {
                     if (item.userId === user?.id) {
                         return (
                             <Link key={item.id} href={`/auth/artwork/${item.id}`}>
                                 <div className="relative group">
-                                <div className='w-[21rem] h-[25rem] relative overflow-hidden'>
-                                    <Image src={item.image} alt={item.title} fill className=" object-cover" 
+                                <div className='w-[27.2rem] h-[25rem] relative overflow-hidden'>
+                                    <Image src={item.firstImage} alt={item.title} fill className=" object-cover" 
                                     />
                                 </div>
                                     <div className="absolute flex items-end inset-0 bg-gradient-to-b from-transparent to-black opacity-0 group-hover:opacity-70 transition-opacity duration-300">

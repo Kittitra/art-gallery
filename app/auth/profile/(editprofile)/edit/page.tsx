@@ -102,14 +102,6 @@ const EditPage = () => {
     <div className='flex flex-row justify-between items-start p-10 px-[15rem] w-full '>
       <div className='flex flex-col w-full'>
         <div className='flex flex-row w-full gap-3'>
-          {/* <Image 
-            src={currentUser?.image || "/default-image.jpg"} 
-            alt='User profile picture'
-            className='w-[9rem] rounded-full'
-            width={120} 
-            height={120} // กำหนดความสูงให้ชัดเจน
-            
-          /> */}
           <Avatar className='w-[7rem] h-[7rem]'>
               <AvatarImage src={imageUrls[0] || ''} 
               className='object-cover'/> {/* แสดงเฉพาะภาพแรก */}

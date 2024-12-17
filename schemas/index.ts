@@ -49,3 +49,7 @@ export const SocialForm = z.object({
 export const CommentSchema = z.object({
     comment: z.string().min(1, "Add your comment"),
 })
+
+export const ReplySchema = z.object({
+    comment: z.string().min(1, "Add your comment"),
+})

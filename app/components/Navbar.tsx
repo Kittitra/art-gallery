@@ -6,12 +6,30 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Input } from '@/components/ui/input'
 import { useCurrentUser } from '@/hooks/use-current-user';
 import Link from 'next/link'
-import React from 'react'
+import React, { useState } from 'react'
 import { FiSearch } from 'react-icons/fi'
 import { FaUser } from "react-icons/fa"
 import { signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation'
 
 const Navbar = () => {
+    const [url, setUrl] = useState('');
+    const router = useRouter();
+  
+    const handleRedirect = () => {
+      if (url) {
+        router.push(`/auth/search/${url}`); // Redirect ไปยัง URL
+      } else {
+        alert('กรุณากรอก URL ที่ต้องการ'); // แจ้งเตือนเมื่อไม่มีค่า
+      }
+    };
+
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'Enter') {
+          handleRedirect(); // เรียกใช้ฟังก์ชันเมื่อกด Enter
+        }
+      };
+
     const items = [
         {
             name: "Logo",
@@ -32,6 +50,8 @@ const Navbar = () => {
     }
 
     const user = useCurrentUser();
+
+
   return (
     <div className='flex justify-between items-center p-9 text-xl font-medium px-16'>
         <div className='flex gap-10  '>
@@ -46,6 +66,9 @@ const Navbar = () => {
 
         <div className='relative'>
             <Input className=' rounded-2xl pl-10 w-[450px] border-slate-500 hover:border-white'
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder='Search' />
             <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                 <FiSearch className="text-gray-500" /> 
