@@ -1,11 +1,11 @@
 import Navbar from '@/app/components/Navbar';
 import React from 'react'
 
-interface profileLayoutProps {
+interface ArtworkLayoutProps {
     children: React.ReactNode;
 }
 
-const ProfileLayout = ({children}: profileLayoutProps) => {
+const ArtworkLayout = ({children}: ArtworkLayoutProps) => {
   return (
     <div className='h-full'>
         <Navbar />
@@ -16,4 +16,4 @@ const ProfileLayout = ({children}: profileLayoutProps) => {
   )
 }
 
-export default ProfileLayout
+export default ArtworkLayout

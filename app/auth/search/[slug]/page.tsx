@@ -17,6 +17,7 @@ interface Artwork {
     title: string;
     description: string;
     status: ArtStatus;
+    tags: string[]
   }
 
   interface User {
@@ -57,8 +58,16 @@ const SearchPage = () => {
         }
       };
 
-    const artworksFilter = artworks.filter(item => item.title.toLocaleLowerCase().includes(slug.toLocaleLowerCase()))
-    const usersFilter = user.filter(item => item.name.toLocaleLowerCase().includes(slug.toLocaleLowerCase()))
+      const artworksFilter = artworks.filter(
+        item =>
+          item.title.toLocaleLowerCase().includes(slug.toLocaleLowerCase()) || // ตรวจสอบ slug กับ title
+          item.tags.some(tag => tag.toLocaleLowerCase() === slug.toLocaleLowerCase()) // ตรวจสอบ slug กับ tags
+      );
+    const usersFilter = user.filter(item => 
+        item.name.toLocaleLowerCase().includes(slug.toLocaleLowerCase())
+    )
+
+    console.log(artworksFilter)
     
     useEffect(() => {
         fetchArtwork();
@@ -106,7 +115,7 @@ const SearchPage = () => {
                     {artworksFilter.filter(item => item.status !== "Private").length} results
                 </div>
 
-                <div className='flex flex-row gap-1'>
+                <div className='flex flex-row gap-1 flex-wrap'>
                 {artworksFilter.map((items, index) => {
                     if(items.status !== "Private") {
                         const imageUrl = items.image.split(',')[0]
@@ -133,10 +142,10 @@ const SearchPage = () => {
                     Search for {slug}
                 </div>
                 <div className=' text-lg font-light py-2'>
-                    {usersFilter.length} results
+                    {usersFilter.length} results 
                 </div>
 
-                <div className='flex flex-row gap-3'>
+                <div className='flex flex-row gap-3 flex-wrap'>
                 {usersFilter.map((items, index) => (
                     <Link href={`/auth/profile/${items.id}`} key={index}>
                         <div key={items.id} className='group relative'>

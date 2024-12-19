@@ -37,7 +37,7 @@ interface Artwork {
   createdAt: string;
   likeCount: number;
   software: string;
-  tags: string;
+  tags: string[];
   comment: Comment[]
   like: Like[]
 }
@@ -626,14 +626,20 @@ const ArtworkPage = () => {
 
                 <p className='py-3'></p>
 
-                <div className=" self-start text-xl font-bold">
-                    Tags
-                    <div className='pt-5'>
-                      <Button className='bg-[#3f3f3f] text-lg flex justify-center  hover:!bg-[#373737] hover:!text-white'>
-                      # {artworks.tags}
-                      </Button>
+                <div className="w-full">
+                  <div className=" text-xl font-bold">
+                      Tags
+                      <div className='flex pt-5 flex-row gap-2'>
+                        {artworks.tags.map((item) => (
+                          <Link href={`/auth/search/${item}`}>
+                              <Button className='bg-[#3f3f3f] text-lg flex justify-center  hover:!bg-[#373737] hover:!text-white'>
+                              # {item}
+                              </Button>
+                          </Link>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                </div>
 
           </div>
         </div>
