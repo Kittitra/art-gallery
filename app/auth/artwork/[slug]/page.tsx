@@ -4,7 +4,7 @@ import * as z from "zod"
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
-import React, { useEffect, useState, useTransition } from 'react';
+import React, { useEffect, useRef, useState, useTransition } from 'react';
 import { AiFillLike } from "react-icons/ai";
 import axios from 'axios';
 import { ArtStatus, UrlType, Like, Follow } from '@prisma/client';
@@ -75,16 +75,13 @@ interface Comment {
   user: User[];
 }
 
-
 const ArtworkPage = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [artworks, setArtworks] = useState<Artwork>();
   const [follow, setFollow] = useState<Follow[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
   const [replyVisible, setReplyVisible] = useState<{ [key: string]: boolean }>({});
-  // const [visibleReplies, setVisibleReplies] = useState(0); // จำนวน Reply ที่แสดงเริ่มต้น
-  const [commentId, setCommentId] = useState<string>("")
-  const [visibleCount, setVisibleCount] = useState(3);
+  const [visibleCount, setVisibleCount] = useState(5);
   const [loading, setLoading] = useState(false);
   const [url, setUrl] = useState<Social[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -109,20 +106,14 @@ const ArtworkPage = () => {
   const formReply = useForm<z.infer<typeof ReplySchema>>({
     resolver: zodResolver(ReplySchema),
     defaultValues: {
-      comment: "",
+      reply: "",
     },
   });
-
-  
-  const CommentIdSet = (Cid: string) => {
-    setCommentId(Cid)
-  }
 
   const onSubmit = (values: z.infer<typeof CommentSchema>) => {
     setError("");
     setSuccess("");
-
-
+    
     startTransition(() => {
       comment(values, userId, artworks?.id as string )
         .then((data) => {
@@ -138,21 +129,25 @@ const ArtworkPage = () => {
     form.reset();
   };
 
-  const onReply = async (values: z.infer<typeof ReplySchema>) => {
+  const onReply = (commentId: string) => async (values: z.infer<typeof ReplySchema>) => {
     setError("");
     setSuccess("");
     startTransition(() => {
       reply(values, userId, artworks?.id as string, commentId)
         .then((data) => {
-          setError(data?.error || "");
-          fetchComments();
-          setReplyVisible((prev) => ({ ...prev, [commentId]: false })); // Close reply box
+          if (data?.error) {
+            setError(data.error);
+          } else {
+            // setSuccess("Reply added successfully.");
+            fetchComments(); // โหลดคอมเมนต์ใหม่
+            setReplyVisible((prev) => ({ ...prev, [commentId]: false })); // ปิดกล่องตอบกลับ
+          }
         })
         .catch(() => setError("Failed to add reply. Please try again."));
     });
-    formReply.reset();
+    formReply.reset(); // ล้างข้อมูลฟอร์ม
   };
-
+  
   const fetchData = async () => {
     try {
       // ดึงข้อมูลพร้อมกันจาก API หลายตัว
@@ -182,8 +177,8 @@ const ArtworkPage = () => {
     setLoading(true);
     try {
       // ดึงคอมเมนต์ที่เกี่ยวข้องกับ artwork โดยใช้ artId
-      const res = await axios.get(`/api/comment?artId=${artworks?.id}`);
-      setComments(res.data.data);  // เซ็ตคอมเมนต์ที่ได้รับ
+      const res = await axios.get(`/api/comment`);
+      setComments(res.data);  // เซ็ตคอมเมนต์ที่ได้รับ
     } catch (err) {
       console.error("Error fetching comments:", err);
       setError("Failed to load comments");
@@ -191,7 +186,7 @@ const ArtworkPage = () => {
       setLoading(false);
     }
   };
-  
+
 
   const handleUpdateStatus = async () => {
     try {
@@ -218,16 +213,8 @@ const ArtworkPage = () => {
   
   const GenerateUrl = (type: UrlType) => urlIcons[type] || null;
   
-  const handleLoadMore = () => {
-    setVisibleCount((prev) => prev + 5); // เพิ่มจำนวนที่จะแสดงทีละ 5
-  };
 
-  const toggleReply = (commentId: string) => {
-    setReplyVisible((prev) => ({
-      ...prev,
-      [commentId]: !prev[commentId],
-    }));
-  };
+
 
   if (error) return <p className="text-red-500">{error}</p>;
   if (!artworks) return <p className="h-screen p-10 text-xl font-bold">Loading...</p>;
@@ -244,22 +231,47 @@ const ArtworkPage = () => {
   });
 
   const CommentItem: React.FC<{ comment: Comment; replies: Comment[] }> = ({ comment, replies }) => {
-    const [visibleReplies, setVisibleReplies] = useState<Record<string, number>>({}); // เก็บสถานะการมองเห็นของแต่ละคอมเมนต์
+    // const visibleRepliesRef = useRef<Record<string, number>>({}); // ใช้ useRef แทน
+    // const [visibleReplies, setVisibleReplies] = useState<Record<string, number>>({}); // เก็บสถานะการมองเห็นของแต่ละคอมเมนต์
+    const visibleRepliesRef = useRef<Record<string, number>>({});
+    const [_, forceUpdate] = useState(0); // ใช้สำหรับบังคับ re-render
     const user = users.find((u) => u.id === comment.userId);
   
     // กำหนดค่าเริ่มต้นสำหรับ Reply ที่แสดง
     const initialRepliesToShow = 0;
-    const currentVisibleReplies = visibleReplies[comment.id] || initialRepliesToShow;
-  
+
+    const currentVisibleReplies = visibleRepliesRef.current[comment.id] || 0;
+    const getCurrentVisibleReplies = () => visibleRepliesRef.current[comment.id] || initialRepliesToShow;
+
     const loadMoreReplies = () => {
-      setVisibleReplies((prev) => ({
+      visibleRepliesRef.current[comment.id] = getCurrentVisibleReplies() + 2;
+      forceUpdate((prev) => prev + 1); // บังคับให้ re-render UI
+    };
+
+    console.log(currentVisibleReplies)
+    
+    // const currentVisibleReplies = visibleReplies[comment.id] || initialRepliesToShow;
+    // const loadMoreReplies = () => {
+    //   setVisibleReplies((prev) => ({
+    //     ...prev,
+    //     [comment.id]: (prev[comment.id] || initialRepliesToShow) + 2,
+    //   }));
+
+    // };
+    // console.log(visibleRepliesRef.current[comment.id])
+
+
+    const toggleReply = (commentId: string) => {
+      setReplyVisible((prev) => ({
         ...prev,
-        [comment.id]: (prev[comment.id] || initialRepliesToShow) + 2,
+        [commentId]: !prev[commentId],
       }));
     };
   
     // กรองคอมเมนต์ย่อยที่สัมพันธ์กับคอมเมนต์หลักนี้
     const filteredReplies = replies.filter((r) => r.parentId === comment.id);
+
+
   
     if(artworks.id === comment.artId) {
       return (
@@ -279,26 +291,67 @@ const ArtworkPage = () => {
               </div>
             </div>
           </div>
+
+          <div
+          onClick={() => toggleReply(comment.id)} // toggle เฉพาะ commentId นี้
+          className="text-gray-500 cursor-pointer text-sm pb-5 flex items-center w-fit">
+            <DotFilledIcon />{replyVisible[comment.id] ? "Hide" : "reply"}
+          </div>
+            {replyVisible[comment.id] && (
+                <div className='w-full pb-5'>
+                  <Form {...formReply}>
+                    <form onSubmit={formReply.handleSubmit(onReply(comment.id))}>
+                      <FormField
+                        control={formReply.control}
+                        name="reply"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="flex flex-row gap-3 w-full">
+                              <Input
+                                placeholder='Add your reply'
+                                {...field}
+                                disabled={isPending}
+                              />
+                              <Button>
+                                {isPending ? "Replying..." : "Reply"}
+                              </Button>
+                            </div>
+                          </FormItem>
+                        )} />
+                    </form>
+                  </Form>
+                </div>
+            )}
     
           {/* คอมเมนต์ย่อย */}
           <div className="ml-10">
-            {filteredReplies.slice(0, currentVisibleReplies).map((reply) => (
-              <div key={reply.id} className="flex flex-row items-center gap-4 mb-4">
-                <Avatar className="w-10 h-10">
-                  <AvatarImage src={users.find((u) => u.id === reply.userId)?.image || ""} />
-                  <AvatarFallback className="bg-white">
-                    <FaUser className="text-black" />
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col gap-1">
-                  <div className="font-semibold text-lg text-gray-500">
-                    {users.find((u) => u.id === reply.userId)?.name}
+            {filteredReplies.slice(0, currentVisibleReplies).map((reply) => {
+                  const parentComment = comments.find((c) => c.id === reply.parentId);
+                  const userReplyName = users.find((u) => u.id === parentComment?.userId);
+                  
+              return(
+                <div key={reply.id} className="flex flex-row items-center gap-4 mb-4">
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage src={users.find((u) => u.id === reply.userId)?.image || ""} />
+                    <AvatarFallback className="bg-white">
+                      <FaUser className="text-black" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col gap-1">
+                    <div className="font-semibold text-sm text-gray-500 flex flex-row gap-1">
+                      <div>
+                        {users.find((u) => u.id === reply.userId)?.name}
+                      </div>
+                      <div className="font-light">
+                        reply to @{userReplyName?.name}
+                      </div>
+                    </div>
+                    <div className="font-medium text-xs">{reply.comment || ""}</div>
                   </div>
-                  <div className="font-medium text-xs">{reply.comment || ""}</div>
                 </div>
-              </div>
-            ))}
-    
+              )
+          })}
+
             {/* ปุ่ม Load More Replies */}
             {filteredReplies.length > currentVisibleReplies && (
               <div
@@ -313,7 +366,6 @@ const ArtworkPage = () => {
       );
     }
   };
-
 
   if (!creater) {
     return <p>Error: User not found.</p>;
@@ -462,7 +514,7 @@ const ArtworkPage = () => {
 
   
   return (
-    <div className="w-full min-h-screen">
+    <div className="w-full min-h-fit">
       <div className="flex flex-row w-full h-full gap-3 p-5">
         {/* Artwork Content */}
         <div className="w-full h-full">
@@ -586,17 +638,17 @@ const ArtworkPage = () => {
 
                 {/* Filter and display comments for the current artwork */}
                 {comments.length > 0 ? (
-                    <CommentList comments={comments.slice(0, visibleCount)} artworks={artworks}  />
+                    <CommentList comments={comments} artworks={artworks}  />
                 ) : (
                   <p className=" text-lg font-semibold text-gray-200">No comments yet. Be the first to comment!</p>
                 )}
 
-                {/* Show more button */}
+                {/* Show more button
                 {visibleCount < comments.filter((comment) => comment.artId === artworks.id).length && (
                   <button onClick={handleLoadMore} className="text-sm font-semibold text-gray-500">
                     Show More
                   </button>
-                )}
+                )} */}
               </div>
             </div>
               <div className='w-full'>

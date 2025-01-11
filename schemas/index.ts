@@ -51,5 +51,5 @@ export const CommentSchema = z.object({
 })
 
 export const ReplySchema = z.object({
-    comment: z.string().min(1, "Add your comment"),
+    reply: z.string().min(1, "Add reply comment"),
 })

@@ -7,9 +7,9 @@ interface ArtworkLayoutProps {
 
 const ArtworkLayout = ({children}: ArtworkLayoutProps) => {
   return (
-    <div className='h-full'>
+    <div className='h-fit'>
         <Navbar />
-        <div >
+        <div className='min-h-screen'>
           {children}
         </div>
     </div>

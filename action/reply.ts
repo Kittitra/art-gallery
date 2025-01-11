@@ -11,7 +11,7 @@ export const reply = async (values: z.infer<typeof ReplySchema>, userId: string,
         return {error: "invalid fields"}
     }
 
-    const {comment} = validateFields.data;
+    const {reply} = validateFields.data;
 
     if (!userId) {
         return { error: "User ID is required." };
@@ -19,13 +19,12 @@ export const reply = async (values: z.infer<typeof ReplySchema>, userId: string,
 
     await db.comment.create({
         data: {
-            comment,
+            comment: reply,
             userId,
             artId,
             parentId: commentId || null,
         }
     })
 
-    return {success: "Add Comment Complete"}
 
 }
