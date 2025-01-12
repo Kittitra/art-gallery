@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 // export async function GET(req: NextRequest) {
 //   try {
@@ -39,7 +39,7 @@ import { NextRequest, NextResponse } from "next/server";
 // }
 
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
       const artwork = await db.comment.findMany(); // ดึงข้อมูลทั้งหมดจากตาราง artwork
 

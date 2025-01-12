@@ -1,4 +1,3 @@
-import Navbar from '@/app/components/Navbar';
 import React from 'react'
 
 interface profileLayoutProps {

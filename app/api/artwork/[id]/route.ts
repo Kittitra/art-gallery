@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { ArtStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET( { params }: { params: { id: string } }) {
   const { id } = params;
 
   if (!id) {
@@ -27,7 +27,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 }
 
 // PUT API
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT( { params }: { params: { id: string } }) {
   const { id } = params;
 
   if (!id) {
@@ -50,7 +50,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 }
 
 // DELETE API
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE( { params }: { params: { id: string } }) {
   const { id } = params;
 
   if (!id) {

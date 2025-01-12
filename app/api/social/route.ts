@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 // GET: ดึงข้อมูลผู้ใช้ตาม id
-export async function GET(req: Request) {
+export async function GET() {
 
     try {
         const social = await db.social.findMany();

@@ -1,8 +1,8 @@
 import { db } from "@/lib/db";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 // GET: Fetch follow by followingId
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
         const follow = await db.follow.findMany(); // ดึงข้อมูลทั้งหมดจากตาราง artwork
   
