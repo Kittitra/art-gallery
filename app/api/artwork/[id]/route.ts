@@ -20,9 +20,11 @@ export async function GET( { params }: { params: { id: string } }) {
     }
 
     return NextResponse.json(artwork, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("GET Error:", error);
-    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    return NextResponse.json({ error: message || "Internal Server Error" }, { status: 500 });
   }
 }
 
@@ -43,9 +45,11 @@ export async function PUT( { params }: { params: { id: string } }) {
     });
 
     return NextResponse.json(artwork, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("PUT Error:", error);
-    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    return NextResponse.json({ error: message || "Internal Server Error" }, { status: 500 });
   }
 }
 
@@ -60,8 +64,10 @@ export async function DELETE( { params }: { params: { id: string } }) {
   try {
     await db.artwork.delete({ where: { id } });
     return NextResponse.json({ message: "Artwork deleted successfully" }, { status: 200 });
-  } catch (error: any) {
-    console.error("DELETE Error:", error);
-    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+  } catch (error: unknown) {
+    console.error("DEL Error:", error);
+
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    return NextResponse.json({ error: message || "Internal Server Error" }, { status: 500 });
   }
 }
