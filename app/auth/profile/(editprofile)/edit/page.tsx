@@ -6,7 +6,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useCurrentUser } from '@/hooks/use-current-user';
-import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React, { useEffect, useState, useTransition } from 'react';
@@ -14,7 +13,6 @@ import { useForm } from 'react-hook-form';
 import { EditForm } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { edit } from "@/action/edit";
-import ImageUpload from "@/app/components/image-upload";
 import EditImage from "@/app/components/edit-image";
 import { FaSave } from "react-icons/fa";
 import FormSuccess from "@/app/components/formSuccess";

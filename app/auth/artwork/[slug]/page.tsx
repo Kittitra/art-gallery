@@ -11,7 +11,7 @@ import { ArtStatus, UrlType, Like, Follow } from '@prisma/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import Link from 'next/link';
-import { CircleIcon, DotFilledIcon, InstagramLogoIcon, TwitterLogoIcon } from '@radix-ui/react-icons';
+import { DotFilledIcon, InstagramLogoIcon, TwitterLogoIcon } from '@radix-ui/react-icons';
 import { FaDeviantart, FaFacebook, FaUser } from 'react-icons/fa';
 import FormSuccess from '@/app/components/formSuccess';
 import { MdOutlineComment } from "react-icons/md";
@@ -358,6 +358,7 @@ const ArtworkPage = () => {
                 onClick={loadMoreReplies}
                 className="text-sm text-gray-500 cursor-pointer mb-2 flex flex-row ml-24 mt-3"
               >
+                <GoDotFill />
                 Load More Replies
               </div>
             )}
