@@ -6,13 +6,11 @@ import { useCurrentUser } from '@/hooks/use-current-user';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import React, { useEffect, useState, useTransition } from 'react';
@@ -21,12 +19,12 @@ import { SocialForm } from '@/schemas';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { social } from "@/action/social";
-import { ArrowUpIcon, Cross1Icon, InstagramLogoIcon, TriangleDownIcon, TwitterLogoIcon } from "@radix-ui/react-icons";
-import FormSuccess from "@/app/components/formSuccess";
-import FormError from "@/app/components/formError";
+import { Cross1Icon, InstagramLogoIcon, TriangleDownIcon, TwitterLogoIcon } from "@radix-ui/react-icons";
 import { FaDeviantart, FaFacebook } from "react-icons/fa";
 import axios from "axios";
 import { UrlType } from "@prisma/client";
+import FormSuccess from "@/app/components/formSuccess";
+import FormError from "@/app/components/formError";
 
 interface User {
   id: string;
@@ -182,7 +180,7 @@ const EditPage = () => {
 
   useEffect(() => {
     // ฟิลเตอร์กรองเอา social ที่ไม่ได้ถูกเพิ่มจาก `url`
-    setAvailableSocials((prev) => [
+    setAvailableSocials(() => [
       "Facebook",
       "Instagram",
       "Deviantart",
@@ -190,14 +188,10 @@ const EditPage = () => {
     ].filter(social => !url.some(item => item.type === social)));
   }, [url]);
   
-  
-
   useEffect(() => {
     fetchUser();
     fetchUrl();
   }, []); // เพิ่ม dependency [] เพื่อให้เรียกใช้เพียงครั้งเดียวเมื่อ component โหลด
-
-  
 
   return (
       <div className='flex flex-row justify-between items-start p-10 px-[15rem] w-full'>
@@ -266,9 +260,9 @@ const EditPage = () => {
             </div>
           </div>
         <div>
-          <div className="pt-5 p-5 ">
-            {url.map((items) => (
-              <div className="flex flex-row justify-between">
+          <div className="pt-5 p-5">
+            {url.map((items, index) => (
+              <div key={index} className="flex flex-row justify-between">
                 <div className="flex flex-row gap-3 items-center pb-5">
                   <div>
                     {items.link?.startsWith("https://www.facebook.com/")? <FaFacebook style={{ width: "25px", height: "25px" }} /> : ""}
@@ -343,6 +337,9 @@ const EditPage = () => {
               </div>
             </form>
           </Form>
+
+          <FormSuccess message={success} />
+          <FormError message={error} />
 
         </div>
         </div>

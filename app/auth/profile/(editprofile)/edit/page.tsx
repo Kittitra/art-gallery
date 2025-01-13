@@ -65,7 +65,7 @@ const EditPage = () => {
           setError(data?.error);
           setSuccess(data?.success);
         })
-        .catch((error) => {
+        .catch((_error) => {
           setError("Failed to login. Please try again.");
         });
     })

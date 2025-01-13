@@ -8,15 +8,14 @@ import { LoginSchema } from "@/schemas";
 import { useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { FcGoogle } from "react-icons/fc";
 import FormError from "@/app/components/formError";
 import FormSuccess from "@/app/components/formSuccess";
 import { login } from "@/action/login";
 import Link from "next/link";
-import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
  
 export default function SignIn() {
   const [error, setError] = useState<string | undefined>("");
@@ -41,7 +40,7 @@ export default function SignIn() {
           setError(data?.error);
           setSuccess(data?.success);
         })
-        .catch((error) => {
+        .catch((_error) => {
           setError("Failed to login. Please try again.");
         });
     });

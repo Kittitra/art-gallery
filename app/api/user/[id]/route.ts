@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 // GET: ดึงข้อมูลผู้ใช้ตาม id
-export async function GET( { params }: { params: { id: string } }) {
+export async function GET(_req: Request, { params }: { params: { id: string } }) {
     const { id } = params;
 
     try {

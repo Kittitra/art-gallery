@@ -8,8 +8,8 @@ import { RegisterSchema } from "@/schemas";
 import { useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { FcGoogle } from "react-icons/fc";
 import FormError from "@/app/components/formError";

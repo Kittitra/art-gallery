@@ -476,7 +476,7 @@ console.log(artworks)
       // ใช้ URL constructor เพื่อตรวจสอบว่าเป็น URL ที่ถูกต้อง
       new URL(string);
       return true;
-    } catch (err) {
+    } catch (_err) {
       return false;
     }
   }
@@ -491,7 +491,7 @@ console.log(artworks)
 
   const imageUrls = splitImage(artworks.image)
 
-  const CommentList: React.FC<{ comments: Comment[]; artworks: Artwork }> = ({ comments, artworks }) => {
+  const CommentList: React.FC<{ comments: Comment[]; artworks: Artwork }> = ({ comments }) => {
   const rootComments = comments.filter((c) => c.parentId === null);
 
   return (
@@ -677,8 +677,8 @@ console.log(artworks)
                   <div className=" text-xl font-bold">
                       Tags
                       <div className='flex pt-5 flex-row gap-2'>
-                        {artworks.tags.map((item) => (
-                          <Link href={`/auth/search/${item}`}>
+                        {artworks.tags.map((item, index) => (
+                          <Link key={index} href={`/auth/search/${item}`}>
                               <Button className='bg-[#3f3f3f] text-lg flex justify-center  hover:!bg-[#373737] hover:!text-white'>
                               # {item}
                               </Button>

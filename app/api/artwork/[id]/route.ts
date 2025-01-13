@@ -45,7 +45,7 @@ export async function GET(
 }
 
 // PUT API
-export async function PUT( { params }: { params: { id: string } }) {
+export async function PUT(_req: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
   if (!id) {
@@ -70,7 +70,7 @@ export async function PUT( { params }: { params: { id: string } }) {
 }
 
 // DELETE API
-export async function DELETE( { params }: { params: { id: string } }) {
+export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
   if (!id) {

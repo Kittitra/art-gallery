@@ -67,7 +67,7 @@ function Homepage() {
         {dataWithFirstImage.map((items, index) => {
           if(items.status !== "Private") {
             return(
-              <Link href={`/auth/artwork/${items.id}`}>
+              <Link key={index} href={`/auth/artwork/${items.id}`}>
                 <div key={items.id} className='relative group '>
                     <div className='w-[28.8rem] h-[25rem] relative overflow-hidden'>
 

@@ -1,7 +1,6 @@
 import React from 'react';
-import { CldUploadWidget } from "next-cloudinary";
+import { CldUploadWidget, CloudinaryUploadWidgetInfo } from "next-cloudinary";
 import { ArrowUpIcon } from '@radix-ui/react-icons';
-import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { FaUser } from 'react-icons/fa';
 
@@ -12,10 +11,17 @@ type Props = {
     userImage: string | null | undefined;
 };
 
-const EditImage: React.FC<Props> = ({ userImage, imageUrls, setImageUrls, handleImageChange }) => {
-    const onupload = (result: any) => {
+
+const EditImage: React.FC<Props> = ({ imageUrls, setImageUrls, handleImageChange }) => {
+    const onupload = (result: CloudinaryUploadWidgetInfo) => {
+        if(result.info === undefined) {
+            console.error("Upload result does not contain 'info'");
+            return;
+        }
+
         const uploadedImageUrl = result.info.secure_url; // ดึง URL ของรูปที่อัปโหลด
         console.log("Uploaded image URL:", uploadedImageUrl);
+        console.log("result info is:", result)
         
         // อัปเดตภาพใน Avatar
         setImageUrls([uploadedImageUrl]); // แทนที่ภาพเก่าด้วยภาพใหม่
