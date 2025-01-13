@@ -42,8 +42,7 @@ function Homepage() {
         setError("Failed to fetch data");
         console.error("Fetch error:", err); // แสดงข้อผิดพลาดใน console
     }
-};
-
+  };
       
   const dataWithFirstImage = artWorks.map(item => ({
     ...item,
@@ -54,6 +53,10 @@ function Homepage() {
   useEffect(() => {
     getArtwork();
   }, []);
+
+  if(error != null) {
+    return <div> {error} </div>
+  }
 
   return (
     <div className="w-full h-screen flex flex-col p-5 gap-5">

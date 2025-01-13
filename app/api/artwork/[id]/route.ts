@@ -1,22 +1,35 @@
 import { db } from "@/lib/db";
 import { ArtStatus } from "@prisma/client";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET( { params }: { params: { id: string } }) {
+interface Params {
+  id: string
+}
+
+export async function GET(
+  _req: NextRequest, // ใช้ NextRequest ซึ่ง Next.js ให้มาแทน Request
+  { params }: { params: Params }
+) {
   const { id } = params;
 
   if (!id) {
-    return NextResponse.json({ error: "Invalid or missing ID" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid or missing ID" },
+      { status: 400 }
+    );
   }
 
   try {
     const artwork = await db.artwork.findUnique({
       where: { id },
-      include: { comment: true, like: true }, // รวมข้อมูล Comment
+      include: { comment: true, like: true },
     });
 
     if (!artwork) {
-      return NextResponse.json({ error: "Artwork not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Artwork not found" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(artwork, { status: 200 });
@@ -24,7 +37,10 @@ export async function GET( { params }: { params: { id: string } }) {
     console.error("GET Error:", error);
 
     const message = error instanceof Error ? error.message : "Internal Server Error";
-    return NextResponse.json({ error: message || "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: message || "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
 

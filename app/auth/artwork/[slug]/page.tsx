@@ -81,8 +81,6 @@ const ArtworkPage = () => {
   const [follow, setFollow] = useState<Follow[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
   const [replyVisible, setReplyVisible] = useState<{ [key: string]: boolean }>({});
-  const [visibleCount, setVisibleCount] = useState(5);
-  const [loading, setLoading] = useState(false);
   const [url, setUrl] = useState<Social[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | undefined>("");
@@ -168,13 +166,12 @@ const ArtworkPage = () => {
       setFollow(followRes);
     } catch (err) {
       // แสดงข้อผิดพลาดเมื่อเกิดปัญหาในการดึงข้อมูล
-      setError("Failed to fetch data");
+      setError("Failed to fetch data33");
       console.error("Error fetching data:", err);
     }
   };
 
   const fetchComments = async () => {
-    setLoading(true);
     try {
       // ดึงคอมเมนต์ที่เกี่ยวข้องกับ artwork โดยใช้ artId
       const res = await axios.get(`/api/comment`);
@@ -183,11 +180,10 @@ const ArtworkPage = () => {
       console.error("Error fetching comments:", err);
       setError("Failed to load comments");
     } finally {
-      setLoading(false);
     }
   };
 
-
+console.log(artworks)
   const handleUpdateStatus = async () => {
     try {
       const response = await axios.put(`/api/artwork/${slug}`, { id: slug });
@@ -234,7 +230,6 @@ const ArtworkPage = () => {
     // const visibleRepliesRef = useRef<Record<string, number>>({}); // ใช้ useRef แทน
     // const [visibleReplies, setVisibleReplies] = useState<Record<string, number>>({}); // เก็บสถานะการมองเห็นของแต่ละคอมเมนต์
     const visibleRepliesRef = useRef<Record<string, number>>({});
-    const [_, forceUpdate] = useState(0); // ใช้สำหรับบังคับ re-render
     const user = users.find((u) => u.id === comment.userId);
   
     // กำหนดค่าเริ่มต้นสำหรับ Reply ที่แสดง
@@ -245,7 +240,6 @@ const ArtworkPage = () => {
 
     const loadMoreReplies = () => {
       visibleRepliesRef.current[comment.id] = getCurrentVisibleReplies() + 2;
-      forceUpdate((prev) => prev + 1); // บังคับให้ re-render UI
     };
 
     console.log(currentVisibleReplies)
