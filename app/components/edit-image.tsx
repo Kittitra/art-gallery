@@ -12,6 +12,8 @@ type Props = {
 };
 
 
+
+
 const EditImage: React.FC<Props> = ({ imageUrls, setImageUrls, handleImageChange }) => {
     const onupload = (result: CloudinaryUploadWidgetInfo) => {
         if(result.info === undefined) {
@@ -32,7 +34,7 @@ const EditImage: React.FC<Props> = ({ imageUrls, setImageUrls, handleImageChange
         <div>
             <div className='mb-10'>
                 <CldUploadWidget uploadPreset='wsahvwt1' onSuccess={onupload}>
-                    {({ open }: any) => {
+                    {({ open }: { open: () => void }) => {
                         function handleOnclick(e: React.MouseEvent<HTMLButtonElement>) {
                             e.preventDefault();
                             console.log("Open widget clicked"); // ตรวจสอบว่า open ถูกเรียกใช้งาน

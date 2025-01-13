@@ -1,5 +1,5 @@
-import React, {useState, useEffect} from 'react'
-import {CldUploadWidget} from "next-cloudinary"
+import React from 'react'
+import {CldUploadWidget, CloudinaryUploadWidgetInfo} from "next-cloudinary"
 
 type Props = {
     imageUrls: string[]
@@ -7,10 +7,16 @@ type Props = {
     handleImageChange: (newImageUrl: string) => void
 }
 
-const ImageUpload: React.FC<Props> = ({ imageUrls, setImageUrls, handleImageChange}) => {
-    const onupload =(result: any)=> {
+const ImageUpload: React.FC<Props> = ({ imageUrls, setImageUrls}) => {
+    const onupload =(result: CloudinaryUploadWidgetInfo)=> {
+        if(result.info === undefined) {
+            console.error("Upload result does not contain 'info'");
+            return;
+        }
+        
         const uploadedImageUrl = result.info.secure_url; // ดึง URL ของรูปที่อัปโหลด
         console.log("Uploaded image URL:", uploadedImageUrl);
+        
         setImageUrls((prevUrls) => [...prevUrls, uploadedImageUrl]); 
     }
 
@@ -27,7 +33,7 @@ const ImageUpload: React.FC<Props> = ({ imageUrls, setImageUrls, handleImageChan
             <div className='mb-10'>
                 <CldUploadWidget uploadPreset='wsahvwt1' onSuccess={onupload}
                 >
-                    {({ open }: any) => {
+                    {({ open }: { open: () => void }) => {
                         function handleOnclick(e: React.MouseEvent<HTMLButtonElement>) {
                             e.preventDefault();
                             console.log("Open widget clicked"); // ตรวจสอบว่า open ถูกเรียกใช้งาน

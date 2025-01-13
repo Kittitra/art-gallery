@@ -123,7 +123,7 @@ export default function SignIn() {
         <CardFooter className="font-light">
           <Link className=" cursor-pointer pb-1 border-b-2 border-transparent hover:border-b-black transition duration-150"
           href="/auth/register">
-            Don't have an account
+            Don&apos;t have an account
           </Link>
         </CardFooter>
       </Card>

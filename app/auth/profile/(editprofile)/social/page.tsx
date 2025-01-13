@@ -146,7 +146,7 @@ const EditPage = () => {
           })
           .catch(() => setError("Failed to add social media. Please try again."));
       });
-    } catch (error) {
+    } catch (_) {
       setError("An error occurred.");
     }
   };
