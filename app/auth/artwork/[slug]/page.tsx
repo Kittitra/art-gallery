@@ -476,7 +476,7 @@ console.log(artworks)
       // ใช้ URL constructor เพื่อตรวจสอบว่าเป็น URL ที่ถูกต้อง
       new URL(string);
       return true;
-    } catch (_err) {
+    } catch (_) {
       return false;
     }
   }
