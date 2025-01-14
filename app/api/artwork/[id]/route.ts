@@ -3,19 +3,20 @@ import { ArtStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 interface Params {
-  id: string
+  id?: string
 }
+
+
 
 export async function GET(
   _req: NextRequest, // ใช้ NextRequest ซึ่ง Next.js ให้มาแทน Request
-  { params }: { params: Params }
+  context: { params: Params }
 ) {
-  const { id } = params;
+  const { id } = context.params;
 
-  if (!id || typeof id !== 'string') {
-    return NextResponse.json({message: "id not found"});
+  if (!id) {
+    return NextResponse.json({ message: "ID not found" }, { status: 400 });
   }
-
   try {
     const artwork = await db.artwork.findUnique({
       where: { id },
