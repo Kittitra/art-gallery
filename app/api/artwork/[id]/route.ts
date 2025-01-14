@@ -12,11 +12,8 @@ export async function GET(
 ) {
   const { id } = params;
 
-  if (!id) {
-    return NextResponse.json(
-      { error: "Invalid or missing ID" },
-      { status: 400 }
-    );
+  if (!id || typeof id !== 'string') {
+    return NextResponse.json({message: "id not found"});
   }
 
   try {
