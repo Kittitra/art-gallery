@@ -25,7 +25,6 @@ import { toggleLike } from "@/action/like";
 import { toggleFollow } from "@/action/follow";
 import { v4 as uuidv4 } from 'uuid';
 import { reply } from "@/action/reply";
-import { GoDotFill } from "react-icons/go";
 
 interface Artwork {
   id: string;
@@ -228,31 +227,31 @@ console.log(artworks)
 
   const CommentItem: React.FC<{ comment: Comment; replies: Comment[] }> = ({ comment, replies }) => {
     // const visibleRepliesRef = useRef<Record<string, number>>({}); // ใช้ useRef แทน
-    // const [visibleReplies, setVisibleReplies] = useState<Record<string, number>>({}); // เก็บสถานะการมองเห็นของแต่ละคอมเมนต์
+    const [visibleReplies, setVisibleReplies] = useState<Record<string, number>>({}); // เก็บสถานะการมองเห็นของแต่ละคอมเมนต์
     const visibleRepliesRef = useRef<Record<string, number>>({});
     const user = users.find((u) => u.id === comment.userId);
   
     // กำหนดค่าเริ่มต้นสำหรับ Reply ที่แสดง
     const initialRepliesToShow = 0;
 
-    const currentVisibleReplies = visibleRepliesRef.current[comment.id] || 0;
-    const getCurrentVisibleReplies = () => visibleRepliesRef.current[comment.id] || initialRepliesToShow;
+    // const currentVisibleReplies = visibleRepliesRef.current[comment.id] || 0;
+    // const getCurrentVisibleReplies = () => visibleRepliesRef.current[comment.id] || initialRepliesToShow;
 
-    const loadMoreReplies = () => {
-      visibleRepliesRef.current[comment.id] = getCurrentVisibleReplies() + 2;
-    };
-
-    console.log(currentVisibleReplies)
-    
-    // const currentVisibleReplies = visibleReplies[comment.id] || initialRepliesToShow;
     // const loadMoreReplies = () => {
-    //   setVisibleReplies((prev) => ({
-    //     ...prev,
-    //     [comment.id]: (prev[comment.id] || initialRepliesToShow) + 2,
-    //   }));
-
+    //   visibleRepliesRef.current[comment.id] = getCurrentVisibleReplies() + 2;
     // };
-    // console.log(visibleRepliesRef.current[comment.id])
+
+    // console.log(currentVisibleReplies)
+    
+    const currentVisibleReplies = visibleReplies[comment.id] || initialRepliesToShow;
+    const loadMoreReplies = () => {
+      setVisibleReplies((prev) => ({
+        ...prev,
+        [comment.id]: (prev[comment.id] || initialRepliesToShow) + 2,
+      }));
+
+    };
+    console.log(visibleRepliesRef.current[comment.id])
 
 
     const toggleReply = (commentId: string) => {
@@ -352,7 +351,6 @@ console.log(artworks)
                 onClick={loadMoreReplies}
                 className="text-sm text-gray-500 cursor-pointer mb-2 flex flex-row ml-24 mt-3"
               >
-                <GoDotFill />
                 Load More Replies
               </div>
             )}
