@@ -1,5 +1,5 @@
 import React from 'react';
-import { CldUploadWidget, CloudinaryUploadWidgetInfo } from "next-cloudinary";
+import { CldUploadWidget, CloudinaryUploadWidgetResults } from "next-cloudinary";
 import { ArrowUpIcon } from '@radix-ui/react-icons';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { FaUser } from 'react-icons/fa';
@@ -14,20 +14,17 @@ type Props = {
 
 
 
-const EditImage: React.FC<Props> = ({ imageUrls, setImageUrls, handleImageChange }) => {
-    const onupload = (result: CloudinaryUploadWidgetInfo) => {
-        if(result.info === undefined) {
-            console.error("Upload result does not contain 'info'");
-            return;
-        }
-
-        const uploadedImageUrl = result.info.secure_url; // ดึง URL ของรูปที่อัปโหลด
-        console.log("Uploaded image URL:", uploadedImageUrl);
-        console.log("result info is:", result)
-        
-        // อัปเดตภาพใน Avatar
-        setImageUrls([uploadedImageUrl]); // แทนที่ภาพเก่าด้วยภาพใหม่
-        handleImageChange(uploadedImageUrl); // อัปเดตภาพใน Avatar
+const EditImage: React.FC<Props> = ({ imageUrls, setImageUrls }) => {
+    const onupload = (result: CloudinaryUploadWidgetResults) => {
+        if (result.info && typeof result.info !== 'string' && result.info.secure_url) {
+            const uploadedImageUrl = result.info.secure_url;
+            console.log('Uploaded image URL:', uploadedImageUrl);
+      
+            // อัปเดตรายการ imageUrls
+            setImageUrls((prevUrls) => [...prevUrls, uploadedImageUrl]);
+          } else {
+            console.error("Upload result does not contain 'secure_url'");
+          }
     };
 
     return (

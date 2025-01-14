@@ -1,5 +1,5 @@
 import React from 'react'
-import {CldUploadWidget, CloudinaryUploadWidgetInfo} from "next-cloudinary"
+import {CldUploadWidget, CloudinaryUploadWidgetResults} from "next-cloudinary"
 
 type Props = {
     imageUrls: string[]
@@ -8,16 +8,18 @@ type Props = {
 }
 
 const ImageUpload: React.FC<Props> = ({ imageUrls, setImageUrls}) => {
-    const onupload =(result: CloudinaryUploadWidgetInfo)=> {
-        if(result.info === undefined) {
-            console.error("Upload result does not contain 'info'");
-            return;
-        }
-        
-        const uploadedImageUrl = result.info.secure_url; // ดึง URL ของรูปที่อัปโหลด
-        console.log("Uploaded image URL:", uploadedImageUrl);
-        
-        setImageUrls((prevUrls) => [...prevUrls, uploadedImageUrl]); 
+    const onupload =(result: CloudinaryUploadWidgetResults)=> {
+
+        // ตรวจสอบว่า result.info และ secure_url มีอยู่
+    if (result.info && typeof result.info !== 'string' && result.info.secure_url) {
+        const uploadedImageUrl = result.info.secure_url;
+        console.log('Uploaded image URL:', uploadedImageUrl);
+  
+        // อัปเดตรายการ imageUrls
+        setImageUrls((prevUrls) => [...prevUrls, uploadedImageUrl]);
+      } else {
+        console.error("Upload result does not contain 'secure_url'");
+      }
     }
 
     const handleDeleteImage = (index: number) => {
