@@ -9,7 +9,7 @@ interface Params {
 
 
 export async function GET(
-  _req: NextRequest, // ใช้ NextRequest ซึ่ง Next.js ให้มาแทน Request
+  req: NextRequest, // ใช้ NextRequest ซึ่ง Next.js ให้มาแทน Request
   context: { params: Params }
 ) {
   const { id } = context.params;
