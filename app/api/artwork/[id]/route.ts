@@ -14,9 +14,10 @@ export async function GET(
 ) {
   const { id } = context.params;
 
-  if (!id) {
-    return NextResponse.json({ message: "ID not found" }, { status: 400 });
+  if (!id || typeof id !== "string") {
+    return NextResponse.json({ message: "Invalid or missing ID" }, { status: 400 });
   }
+
   try {
     const artwork = await db.artwork.findUnique({
       where: { id },
@@ -31,14 +32,11 @@ export async function GET(
     }
 
     return NextResponse.json(artwork, { status: 200 });
-  } catch (error: unknown) {
-    console.error("GET Error:", error);
 
-    const message = error instanceof Error ? error.message : "Internal Server Error";
-    return NextResponse.json(
-      { error: message || "Internal Server Error" },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    console.error(`[GET Error]: ID=${id}`, error);
+
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 
