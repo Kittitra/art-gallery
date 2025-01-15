@@ -85,3 +85,4 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
     return NextResponse.json({ error: message || "Internal Server Error" }, { status: 500 });
   }
 }
+/* eslint-enable */
