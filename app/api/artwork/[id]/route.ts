@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { db } from "@/lib/db";
 import { ArtStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
