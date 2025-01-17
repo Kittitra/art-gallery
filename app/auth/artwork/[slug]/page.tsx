@@ -194,7 +194,7 @@ const ArtworkPage = () => {
   const handleUpdateStatus = async () => {
     try {
       const response = await axios.put(`/api/artwork/${slug}`, { id: slug });
-      // console.log("Update successful:", response.data.message);
+      console.log("Update successful:", response.data.message);
       setSuccess("Publish Success");
       fetchData();
     } catch (err) {
