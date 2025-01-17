@@ -11,7 +11,7 @@ interface Params {
 
 
 export async function GET(
-  req: NextRequest, // ใช้ NextRequest ซึ่ง Next.js ให้มาแทน Request
+  _req: NextRequest, // ใช้ NextRequest ซึ่ง Next.js ให้มาแทน Request
   context: { params: Params }
 ) {
   const { id } = context.params;

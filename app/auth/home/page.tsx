@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { ArtStatus } from '@prisma/client';
 import Link from 'next/link';
-import { useCurrentUser } from '@/hooks/use-current-user';
 
 interface Artwork {
   id: string;
@@ -19,8 +18,6 @@ function Homepage() {
   const [artWorks, setArtworks] = useState<Artwork[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false)
-
-  // const currentUser = useCurrentUser();
 
 
   const getArtwork = async () => {

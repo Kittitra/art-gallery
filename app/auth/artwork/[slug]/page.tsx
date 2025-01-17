@@ -236,7 +236,7 @@ const ArtworkPage = () => {
   const CommentItem: React.FC<{ comment: Comment; replies: Comment[] }> = ({ comment, replies }) => {
     // const visibleRepliesRef = useRef<Record<string, number>>({}); // ใช้ useRef แทน
     const [visibleReplies, setVisibleReplies] = useState<Record<string, number>>({}); // เก็บสถานะการมองเห็นของแต่ละคอมเมนต์
-    const visibleRepliesRef = useRef<Record<string, number>>({});
+    // const visibleRepliesRef = useRef<Record<string, number>>({});
     const user = users.find((u) => u.id === comment.userId);
   
     // กำหนดค่าเริ่มต้นสำหรับ Reply ที่แสดง
