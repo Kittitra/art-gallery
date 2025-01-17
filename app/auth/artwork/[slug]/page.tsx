@@ -4,7 +4,7 @@ import * as z from "zod"
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import React, { useEffect, useRef, useState, useTransition } from 'react';
+import React, { useEffect, useState, useTransition } from 'react';
 import { AiFillLike } from "react-icons/ai";
 import axios from 'axios';
 import { ArtStatus, UrlType, Like, Follow } from '@prisma/client';
