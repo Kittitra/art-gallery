@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { ArtStatus } from '@prisma/client';
 import Link from 'next/link';
+import { useCurrentUser } from '@/hooks/use-current-user';
 
 interface Artwork {
   id: string;
@@ -17,6 +18,9 @@ interface Artwork {
 function Homepage() {
   const [artWorks, setArtworks] = useState<Artwork[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false)
+
+  // const currentUser = useCurrentUser();
 
 
   const getArtwork = async () => {
@@ -33,11 +37,13 @@ function Homepage() {
         // ตรวจสอบว่า response เป็น JSON หรือไม่
         if (contentType && contentType.includes("application/json")) {
             const result = await response.json(); // กำหนดประเภทข้อมูล
-            console.log(result)
+            // console.log(result)
             setArtworks(result);
         } else {
             throw new TypeError("Expected JSON response but received HTML");
         }
+
+        setLoading(true)
     } catch (err) {
         setError("Failed to fetch data");
         console.error("Fetch error:", err); // แสดงข้อผิดพลาดใน console
@@ -49,6 +55,9 @@ function Homepage() {
     firstImage: item.image.split(',')[0]
   }));
 
+  // console.log("current user is :", currentUser)
+
+
 
   useEffect(() => {
     getArtwork();
@@ -58,12 +67,16 @@ function Homepage() {
     return <div> {error} </div>
   }
 
+  if(!loading) {
+    return <div className="h-screen p-10 text-xl font-bold">Loading...</div>
+  }
+
   return (
-    <div className="w-full h-screen flex flex-col p-5 gap-5">
+    <div className="w-full h-full flex flex-col p-5 gap-5">
       <div className="text-2xl font-semibold">
-        All Channels
+        All Channels 
       </div>
-      <div className='flex flex-row gap-1 flex-wrap'>
+      <div className='flex flex-row gap-1 flex-wrap h-full'>
         {dataWithFirstImage.map((items, index) => {
           if(items.status !== "Private") {
             return(
@@ -83,8 +96,8 @@ function Homepage() {
             )
           }
         })}
-
       </div>
+      
     </div>
   );
 }

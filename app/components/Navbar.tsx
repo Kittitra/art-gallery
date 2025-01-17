@@ -51,17 +51,32 @@ const Navbar = () => {
 
     const user = useCurrentUser();
 
+    const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, item: { name: string; path: string }) => {
+        if (item.name === 'Create' && user === undefined) {
+            e.preventDefault(); // ป้องกันการเปลี่ยนหน้าอัตโนมัติ
+            router.push('/auth/login'); // เปลี่ยนเส้นทางไปที่หน้า login
+        }
+    };
+
 
   return (
     <div className='flex justify-between items-center p-9 text-xl font-medium px-16'>
         <div className='flex gap-10  '>
-            {items.map((item, index) => (
-                <div key={index} className='cursor-pointer pb-1 border-b-2 border-transparent hover:border-b-white transition duration-300  '>
-                    <Link href={item.path}>
+        {items.map((item, index) => {
+            return (
+                <div
+                    key={index}
+                    className="cursor-pointer pb-1 border-b-2 border-transparent hover:border-b-white transition duration-300"
+                >
+                    <Link 
+                        href={item.path} 
+                        onClick={(e) => handleLinkClick(e, item)}
+                    >
                         {item.name}
                     </Link>
                 </div>
-            ))}
+            );
+        })}
         </div>
 
         <div className='relative'>

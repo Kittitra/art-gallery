@@ -3,7 +3,7 @@
 import * as z from "zod"
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useRef, useState, useTransition } from 'react';
 import { AiFillLike } from "react-icons/ai";
 import axios from 'axios';
@@ -88,6 +88,7 @@ const ArtworkPage = () => {
   const [isFollowPending, startFollowTransition] = useTransition();
   const params = useParams();
   const slug = params.slug as string;
+  const router = useRouter();
 
   const currentUser = useCurrentUser();
 
@@ -108,6 +109,9 @@ const ArtworkPage = () => {
   });
 
   const onSubmit = (values: z.infer<typeof CommentSchema>) => {
+    if(currentUser === undefined) {
+      router.push('/auth/login');
+    }
     setError("");
     setSuccess("");
     
@@ -127,6 +131,9 @@ const ArtworkPage = () => {
   };
 
   const onReply = (commentId: string) => async (values: z.infer<typeof ReplySchema>) => {
+    if(currentUser === undefined) {
+      router.push('/auth/login');
+    }
     setError("");
     setSuccess("");
     startTransition(() => {
@@ -163,6 +170,7 @@ const ArtworkPage = () => {
       setUsers(userRes);
       setUrl(urlRes);
       setFollow(followRes);
+
     } catch (err) {
       // แสดงข้อผิดพลาดเมื่อเกิดปัญหาในการดึงข้อมูล
       setError("Failed to fetch data33");
@@ -182,11 +190,11 @@ const ArtworkPage = () => {
     }
   };
 
-console.log(artworks)
+// console.log(artworks)
   const handleUpdateStatus = async () => {
     try {
       const response = await axios.put(`/api/artwork/${slug}`, { id: slug });
-      console.log("Update successful:", response.data.message);
+      // console.log("Update successful:", response.data.message);
       setSuccess("Publish Success");
       fetchData();
     } catch (err) {
@@ -251,7 +259,7 @@ console.log(artworks)
       }));
 
     };
-    console.log(visibleRepliesRef.current[comment.id])
+    // console.log(visibleRepliesRef.current[comment.id])
 
 
     const toggleReply = (commentId: string) => {
@@ -365,11 +373,14 @@ console.log(artworks)
   }
 
   const filteredComments = comments.filter((item) => item.artId === slug);
-
   const handleLike = async () => {
+    if(currentUser === undefined) {
+      router.push('/auth/login');
+    }
     if (isLikePending) return;
   
     startLikeTransition(async () => {
+
       try {
         await toggleLike({
           userId: userId,
@@ -414,6 +425,9 @@ console.log(artworks)
   };
 
   const handleFollow = async (targetUserId: string) => {
+    if(currentUser === undefined) {
+      router.push('/auth/login');
+    }
     if (isLikePending) return;
 
     startFollowTransition( async() => {
