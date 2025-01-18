@@ -3,13 +3,15 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useCurrentUser } from '@/hooks/use-current-user';
-import { ArtStatus, UrlType } from '@prisma/client';
+import { ArtStatus, Follow, UrlType } from '@prisma/client';
 import { InstagramLogoIcon, TwitterLogoIcon } from '@radix-ui/react-icons';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState, useTransition } from 'react';
 import { FaDeviantart, FaFacebook, FaUser } from 'react-icons/fa';
+import { v4 as uuidv4 } from 'uuid';
+import { toggleFollow } from '@/action/follow';
 
 
 interface User {
@@ -41,13 +43,19 @@ export default function Page() {
     const [artWorks, setArtworks] = useState<Artwork[]>([]);
     const [url, setUrl] = useState<Social[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [follow, setFollow] = useState<Follow[]>([]);
+    const [isFollowPending, startFollowTransition] = useTransition();
+
+    const router = useRouter();
     
     const [isLoading, setIsLoading] = useState(true);
+    const currentUser = useCurrentUser();
 
     const params = useParams();
     const slug = params.slug as string;
+    const userId = currentUser?.id as string;
 
-    const currentUser = useCurrentUser();
+
 
     const getUser = async () => {
         try {
@@ -113,6 +121,64 @@ export default function Page() {
         }
     };
 
+    const handleFollow = async (targetUserId: string) => {
+        if(currentUser === undefined) {
+          router.push('/auth/login');
+        }
+    
+        startFollowTransition( async() => {
+    
+          // Optimistic UI update
+          setFollow((prevFollow) => {
+            const isFollowing = prevFollow.some(
+              (item) => item.followingId === targetUserId
+            );
+          
+            if (isFollowing) {
+              return prevFollow.filter((item) => item.followingId !== targetUserId);
+            } else {
+              return [
+                ...prevFollow,
+                {
+                  id: uuidv4(),
+                  followerId: userId,
+                  followingId: targetUserId,
+                  createdAt: new Date(),
+                },
+              ];
+            }
+          });
+    
+          try {
+            await toggleFollow({ followerId: userId, followingId: targetUserId });
+          } catch (error) {
+            console.error("Error toggling follow:", error);
+            // Revert optimistic update if API fails
+            setFollow((prevFollow) => {
+              const isFollowing = prevFollow.some(
+                (item) => item.followingId === targetUserId
+              );
+            
+              if (isFollowing) {
+                return prevFollow.filter((item) => item.followingId !== targetUserId);
+              } else {
+                return [
+                  ...prevFollow,
+                  {
+                    id: uuidv4(),
+                    followerId: userId,
+                    followingId: targetUserId,
+                    createdAt: new Date(),
+                  },
+                ];
+              }
+            });
+          }
+        })
+      
+      
+      };
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center h-screen">
@@ -160,8 +226,15 @@ export default function Page() {
             </Avatar>
             <div>{user?.name}</div>
             {currentUser?.id !== user?.id && (
-                <Button>
-                    Follow
+                <Button onClick={() => handleFollow(slug)} 
+                disabled={isFollowPending}>
+                    {follow.some(
+                        (item) => item.followingId === slug && userId // fix
+                        ) ? (
+                        <div>Unfollow</div>
+                        ) : (
+                        <div>Follow</div>
+                    )}
                 </Button>
             )}
             <div className="text-xl">
