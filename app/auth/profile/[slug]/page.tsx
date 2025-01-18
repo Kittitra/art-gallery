@@ -188,7 +188,7 @@ export default function Page() {
     }
 
     return (
-        <div className="flex flex-row w-full h-screen">
+        <div className="flex flex-row w-full min-h-screen">
           <div className="w-full p-10">
             <div className="font-bold text-2xl">Portfolio</div>
             {error && <p className="text-red-500">{error}</p>}

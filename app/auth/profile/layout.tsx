@@ -7,9 +7,11 @@ interface profileLayoutProps {
 
 const ProfileLayout = ({children}: profileLayoutProps) => {
   return (
-    <div className=''>
+    <div className='h-fit'>
         <Navbar />
-        {children}
+        <div className='min-h-screen'>
+          {children}
+        </div>
     </div>
   )
 }
