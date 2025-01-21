@@ -31,7 +31,7 @@ export default auth((req) => {
   // Redirect to a default page if logged in and on an auth route
   if (isAuthRoute) {
     if (isLoggedIn) {
-      return NextResponse.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
+      return NextResponse.redirect(new URL("/auth/login", nextUrl));
     }
     return NextResponse.next();
   }
