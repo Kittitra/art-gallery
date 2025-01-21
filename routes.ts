@@ -10,6 +10,7 @@ export const authRoute = [
 
 export const apiAuthPrefix = "/api/auth";
 
+export const apiRoute = "/api/";
 
 export const artworkRoute = "/auth/artwork";
 
