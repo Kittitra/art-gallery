@@ -1,12 +1,8 @@
 import { authConfig } from "@/auth.config";
 import NextAuth from "next-auth";
-import { apiAuthPrefix, apiRoute, artworkRoute, authRoute, DEFAULT_LOGIN_REDIRECT, LoggedInRoute, profileRoute, publicRoute } from "@/routes";
+import { apiAuthPrefix,  artworkRoute, authRoute, DEFAULT_LOGIN_REDIRECT, profileRoute, publicRoute } from "@/routes";
 
-// Use only one of the two middleware options below
-// 1. Use middleware directly
-// export const { auth: middleware } = NextAuth(authConfig);
 
-// 2. Wrapped middleware option
 const { auth } = NextAuth(authConfig);
 
 export default auth((req) : any => {
@@ -14,15 +10,14 @@ export default auth((req) : any => {
   const isLoggedIn = !!req.auth;
 
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
-  const isApiRoute = nextUrl.pathname.startsWith(apiRoute);
+  // const isApiRoute = nextUrl.pathname.startsWith(apiRoute);
   const isArtworkRoute = nextUrl.pathname.startsWith(artworkRoute);
   const isProfileRoute = nextUrl.pathname.startsWith(profileRoute);
   const isPublicRoute = publicRoute.includes(nextUrl.pathname);
   const isAuthRoute = authRoute.includes(nextUrl.pathname);
-  const isLoggedRoute = LoggedInRoute.includes(nextUrl.pathname);
 
   // Allow API auth route to continue without any restriction
-  if (isApiAuthRoute || isApiRoute) {
+  if (isApiAuthRoute) {
     return null;
   }
 
