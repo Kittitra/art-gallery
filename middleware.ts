@@ -1,11 +1,19 @@
 import { authConfig } from "@/auth.config";
 import NextAuth from "next-auth";
-import { apiAuthPrefix, apiRoute, artworkRoute, authRoute, DEFAULT_LOGIN_REDIRECT, profileRoute, publicRoute } from "@/routes";
-
+import { 
+  apiAuthPrefix, 
+  apiRoute, 
+  artworkRoute, 
+  authRoute, 
+  DEFAULT_LOGIN_REDIRECT, 
+  profileRoute, 
+  publicRoute 
+} from "@/routes";
+import { NextResponse } from 'next/server';
 
 const { auth } = NextAuth(authConfig);
 
-export default auth((req) : any => {
+export default auth((req): any => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
 
@@ -16,23 +24,19 @@ export default auth((req) : any => {
   const isPublicRoute = publicRoute.includes(nextUrl.pathname);
   const isAuthRoute = authRoute.includes(nextUrl.pathname);
 
-  // Allow API auth route to continue without any restriction
   if (isApiAuthRoute || isApiRoute) {
     return null;
   }
 
-
-  // Redirect to a default page if logged in and on an auth route
   if (isAuthRoute) {
     if (isLoggedIn) {
-      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
+      return NextResponse.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
     }
     return null;
   }
 
-  // Redirect to login page if not logged in and not on a public route
   if (!isLoggedIn && !isPublicRoute && !isArtworkRoute && !isProfileRoute) {
-    return Response.redirect(new URL("/auth/login", nextUrl));
+    return NextResponse.redirect(new URL("/auth/login", nextUrl));
   }
 
   return null;
