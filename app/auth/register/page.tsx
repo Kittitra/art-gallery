@@ -45,7 +45,7 @@ export default function Register() {
   }
 
   return(
-    <div className="flex justify-center items-center w-full h-screen">
+    <div className="flex justify-center items-center w-full h-full p-10">
       <Card className="flex justify-around items-center w-[605px] flex-col h-fit py-7">
         <CardHeader className="flex justify-center items-center pb-10">
           <h1 className="text-5xl font-semibold pb-2">
