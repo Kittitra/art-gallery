@@ -29,10 +29,10 @@ export default auth((req): any => {
   }
 
   if (isAuthRoute) {
-    if (isLoggedIn) {
-      return NextResponse.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
+    if (isLoggedIn && !nextUrl.pathname.startsWith('/auth/login') && !nextUrl.pathname.startsWith('/auth/register')) {
+      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
     }
-    return null;
+    return null; // อนุญาตให้เข้าถึง /auth/login และ /auth/register
   }
 
   if (!isLoggedIn && !isPublicRoute && !isArtworkRoute && !isProfileRoute) {
