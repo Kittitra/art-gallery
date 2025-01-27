@@ -29,7 +29,7 @@ export default auth((req): any => {
   }
 
   if (isAuthRoute) {
-    if (isLoggedIn && !nextUrl.pathname.startsWith('/auth/login') && !nextUrl.pathname.startsWith('/auth/register')) {
+    if (isLoggedIn && !nextUrl.pathname.startsWith('/auth/login') && !nextUrl.pathname.startsWith('/auth/register') && !nextUrl.pathname.startsWith('/api/auth/callback/google')) {
       return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
     }
     return null; // อนุญาตให้เข้าถึง /auth/login และ /auth/register
