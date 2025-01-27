@@ -69,7 +69,7 @@ function Homepage() {
   }
 
   return (
-    <div className="w-full h-full flex flex-col p-5 gap-5">
+    <div className="w-full flex flex-col p-5 gap-5">
       <div className="text-2xl font-semibold">
         All Channels 
       </div>
@@ -94,6 +94,7 @@ function Homepage() {
           }
         })}
       </div>
+      
       
     </div>
   );
