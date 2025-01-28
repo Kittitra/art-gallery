@@ -198,14 +198,14 @@ export default function Page() {
                   
                     if (item.userId === user?.id) {
                         return (
-                          <div>
+                          <div key={index}>
                             {slug != userId ? (
                               <div>
                                 {item.status === "Publish" && (
                                   <Link key={item.id} href={`/auth/artwork/${item.id}`}> 
                                       <div className="relative group">
                                           <div className='w-[27.2rem] h-[25rem] relative overflow-hidden'>
-                                              <Image key={index} src={item.firstImage} alt={item.title} fill className=" object-cover" 
+                                              <Image  src={item.firstImage} alt={item.title} fill className=" object-cover" 
                                               />
                                           </div>
                                           <div className="absolute flex items-end inset-0 bg-gradient-to-b from-transparent to-black opacity-0 group-hover:opacity-70 transition-opacity duration-300">
@@ -226,7 +226,7 @@ export default function Page() {
                                   <Link key={item.id} href={`/auth/artwork/${item.id}`}> 
                                       <div className="relative group">
                                           <div className='w-[27.2rem] h-[25rem] relative overflow-hidden'>
-                                              <Image key={index} src={item.firstImage} alt={item.title} fill className=" object-cover" 
+                                              <Image src={item.firstImage} alt={item.title} fill className=" object-cover" 
                                               />
                                           </div>
                                           <div className="absolute flex items-end inset-0 bg-gradient-to-b from-transparent to-black opacity-0 group-hover:opacity-70 transition-opacity duration-300">
