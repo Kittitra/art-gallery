@@ -187,6 +187,7 @@ export default function Page() {
         );
     }
 
+
     return (
         <div className="flex flex-row w-full min-h-screen">
           <div className="w-full p-10">
@@ -194,24 +195,54 @@ export default function Page() {
             {error && <p className="text-red-500">{error}</p>}
             <div className="flex flex-row gap-1 flex-wrap">
                 {dataWithFirstImage.map((item) => {
+                  
                     if (item.userId === user?.id) {
                         return (
-                            <Link key={item.id} href={`/auth/artwork/${item.id}`}>
-                                <div className="relative group">
-                                <div className='w-[27.2rem] h-[25rem] relative overflow-hidden'>
-                                    <Image src={item.firstImage} alt={item.title} fill className=" object-cover" 
-                                    />
-                                </div>
-                                    <div className="absolute flex items-end inset-0 bg-gradient-to-b from-transparent to-black opacity-0 group-hover:opacity-70 transition-opacity duration-300">
-                                        <span className="text-white text-lg font-semibold p-4">{item.title}</span>
-                                    </div>
-                                    {user.id === currentUser?.id && (
-                                        <div className="absolute flex items-start inset-0 justify-end opacity-0 group-hover:opacity-70 transition-opacity duration-300">
-                                            <span className="text-black font-semibold p-4">{item.status}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </Link>
+                          <div>
+                            {slug != userId ? (
+                              <div>
+                                {item.status === "Publish" && (
+                                  <Link key={item.id} href={`/auth/artwork/${item.id}`}> 
+                                      <div className="relative group">
+                                          <div className='w-[27.2rem] h-[25rem] relative overflow-hidden'>
+                                              <Image src={item.firstImage} alt={item.title} fill className=" object-cover" 
+                                              />
+                                          </div>
+                                          <div className="absolute flex items-end inset-0 bg-gradient-to-b from-transparent to-black opacity-0 group-hover:opacity-70 transition-opacity duration-300">
+                                              <span className="text-white text-lg font-semibold p-4">{item.title}</span>
+                                          </div>
+                                          {user.id === currentUser?.id && (
+                                              <div className="absolute flex items-start inset-0 justify-end opacity-0 group-hover:opacity-70 transition-opacity duration-300">
+                                                  <span className="text-black font-semibold p-4">{item.status}</span>
+                                              </div>
+                                          )}
+                                      </div>
+                                  </Link>
+                                )}
+                              </div>
+                            ) : (
+                              <div>
+                                {item.status === "Private" && (
+                                  <Link key={item.id} href={`/auth/artwork/${item.id}`}> 
+                                      <div className="relative group">
+                                          <div className='w-[27.2rem] h-[25rem] relative overflow-hidden'>
+                                              <Image src={item.firstImage} alt={item.title} fill className=" object-cover" 
+                                              />
+                                          </div>
+                                          <div className="absolute flex items-end inset-0 bg-gradient-to-b from-transparent to-black opacity-0 group-hover:opacity-70 transition-opacity duration-300">
+                                              <span className="text-white text-lg font-semibold p-4">{item.title}</span>
+                                          </div>
+                                          {user.id === currentUser?.id && (
+                                              <div className="absolute flex items-start inset-0 justify-end opacity-0 group-hover:opacity-70 transition-opacity duration-300">
+                                                  <span className="text-black font-semibold p-4">{item.status}</span>
+                                              </div>
+                                          )}
+                                      </div>
+                                  </Link>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         );
                     }
                 })}

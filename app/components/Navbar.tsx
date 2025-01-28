@@ -58,7 +58,6 @@ const Navbar = () => {
         }
     };
 
-
   return (
     <div className='flex justify-between items-center p-9 text-xl font-medium px-16'>
         <div className='flex gap-10  '>
