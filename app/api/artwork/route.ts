@@ -4,12 +4,19 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
   try {
-      const artwork = await db.artwork.findMany(); // ดึงข้อมูลทั้งหมดจากตาราง artwork
+    const artwork = await db.artwork.findMany(); // ดึงข้อมูลทั้งหมดจากตาราง artwork
 
-      return NextResponse.json(artwork);
+    const response = NextResponse.json(artwork, { status: 200 });
+
+    // ปิดแคช
+    response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    response.headers.set("Pragma", "no-cache");
+    response.headers.set("Expires", "0");
+
+    return response;
   } catch (error) {
-      console.error("Error fetching Artwork:", error); // แสดงข้อผิดพลาดใน console
-      return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+    console.error("Error fetching Artwork:", error); // แสดงข้อผิดพลาดใน console
+    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
   }
 }
 
