@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { ArtStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic"; // ปิดแคช API
 export async function GET() {
   try {
     const artwork = await db.artwork.findMany(); // ดึงข้อมูลทั้งหมดจากตาราง artwork
