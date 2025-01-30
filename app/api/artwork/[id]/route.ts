@@ -9,7 +9,7 @@ interface Params {
 }
 
 
-
+export const dynamic = "force-dynamic"; // ปิดแคช API
 export async function GET(
   _req: NextRequest, // ใช้ NextRequest ซึ่ง Next.js ให้มาแทน Request
   context: { params: Params }
