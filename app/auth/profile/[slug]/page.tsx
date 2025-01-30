@@ -199,7 +199,7 @@ export default function Page() {
                     if (item.userId === user?.id) {
                         return (
                           <div key={index}>
-                            {slug != userId ? (
+                            {slug != userId || item.userId === userId ? (
                               <div>
                                 {item.status === "Publish" && (
                                   <Link key={item.id} href={`/auth/artwork/${item.id}`}> 
