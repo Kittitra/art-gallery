@@ -201,7 +201,6 @@ export default function Page() {
                           <div key={index}>
                             {slug != userId || item.userId === userId ? (
                               <div>
-                                {item.status === "Publish" && (
                                   <Link key={item.id} href={`/auth/artwork/${item.id}`}> 
                                       <div className="relative group">
                                           <div className='w-[27.2rem] h-[25rem] relative overflow-hidden'>
@@ -218,7 +217,6 @@ export default function Page() {
                                           )}
                                       </div>
                                   </Link>
-                                )}
                               </div>
                             ) : (
                               <div>
