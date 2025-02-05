@@ -270,13 +270,18 @@ export default function Page() {
                 Contact
             </div>
             <div className='flex flex-row gap-5 justify-around'>
-                {url.map((url, index) => (
-                    <Link href={url.link} key={index} target='_blank'>
-                        <div > 
-                            {GenerateUrl(url.type)}
-                        </div>
-                    </Link>
-                ))}
+              
+                {url.map((url, index) => {
+                  if(slug === url.userId) {
+                    return (
+                      <Link href={url.link} key={index} target='_blank'>
+                          <div > 
+                              {GenerateUrl(url.type)}
+                          </div>
+                      </Link>
+                    )
+                  }
+                })}
             </div>
           </div>
         </div>

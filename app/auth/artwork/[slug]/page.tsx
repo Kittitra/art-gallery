@@ -86,6 +86,7 @@ const ArtworkPage = () => {
   const [isPending, startTransition] = useTransition();
   const [isLikePending, startLikeTransition] = useTransition();
   const [isFollowPending, startFollowTransition] = useTransition();
+  const [isDeletePending, startDeleteTransition] = useTransition();
   const params = useParams();
   const slug = params.slug as string;
   const router = useRouter();
@@ -128,6 +129,21 @@ const ArtworkPage = () => {
     });
 
     form.reset();
+  };
+
+  const handleDelete = async (artId: string) => {
+    try {
+      await axios.delete(`/api/artwork/${slug}`, {
+        data: { artId } // ส่งค่าใน Request Body
+      })
+      .then(() => {
+        router.push(`/auth/profile/${artworks?.userId}`)
+      })
+  
+      console.log("Artwork deleted successfully");
+    } catch (err) {
+      console.error("Error deleting artwork:", err);
+    }
   };
 
   const onReply = (commentId: string) => async (values: z.infer<typeof ReplySchema>) => {
@@ -191,16 +207,19 @@ const ArtworkPage = () => {
   };
 
 // console.log(artworks)
-  const handleUpdateStatus = async () => {
+  const handleUpdateStatus = async (status: ArtStatus) => {
     try {
-      const response = await axios.put(`/api/artwork/${slug}`, { id: slug });
-      console.log("Update successful:", response.data.message);
-      setSuccess("Publish Success");
+      const response = await axios.put(`/api/artwork/${slug}`, {
+        status, // ส่งค่า status ใน request body
+      });
+      setSuccess("Change Status Complete")
+      console.log("Update successful:", response.data);
       fetchData();
     } catch (err) {
       console.error("Error updating status:", err);
     }
   };
+
 
   useEffect(() => {
     fetchData();
@@ -573,17 +592,21 @@ const ArtworkPage = () => {
                 <i>Contract</i>
             </div>
               <div className='flex flex-row gap-5 justify-around'>
-                      {url.map((url, index) => (
-                          <Link href={url.link} key={index} target='_blank'>
-                              <div > 
-                                  {GenerateUrl(url.type)}
-                              </div>
-                          </Link>
-                      ))}
+                  {url.map((url, index) => {
+                    if(url.userId === artworks.userId) {
+                      return (
+                        <Link href={url.link} key={index} target='_blank'>
+                            <div > 
+                                {GenerateUrl(url.type)}
+                            </div>
+                        </Link>
+                      )
+                    }
+                  })}
               </div>
 
             {artworks.status === ArtStatus.Private && (
-              <Button onClick={handleUpdateStatus}>
+              <Button onClick={() => handleUpdateStatus(artworks.status)}>
                 Publish
               </Button>
             )}
@@ -700,8 +723,28 @@ const ArtworkPage = () => {
                     </div>
                 </div>
 
+                
+                {artworks.status === ArtStatus.Publish && artworks.userId === userId && (
+                  <div className="w-full mt-10">
+                      <Button onClick={() => handleUpdateStatus(artworks.status)}>
+                        Turn Private
+                      </Button>
+                    </div>
+                )}
+
+                {artworks.userId === userId && (
+                  <div className="w-full mt-10 flex justify-end">
+                      <Button onClick={() => {handleDelete(slug)}}
+                       className="bg-destructive hover:bg-red-700">
+                        Delete
+                      </Button>
+                    </div>
+                )}
+
+                
           </div>
         </div>
+        
       </div>
     </div>
   );

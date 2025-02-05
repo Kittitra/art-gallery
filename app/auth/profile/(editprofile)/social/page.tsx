@@ -39,6 +39,7 @@ interface Social {
   link: string;
   id: string;
   type: string;
+  userId: string;
 }
 
 const EditPage = () => {
@@ -178,6 +179,8 @@ const EditPage = () => {
     }
   }
 
+  const userUrls = url.filter(item => item.userId === userId);
+
   useEffect(() => {
     // ฟิลเตอร์กรองเอา social ที่ไม่ได้ถูกเพิ่มจาก `url`
     setAvailableSocials(() => [
@@ -185,13 +188,15 @@ const EditPage = () => {
       "Instagram",
       "Deviantart",
       "X",
-    ].filter(social => !url.some(item => item.type === social)));
+    ].filter(social => !userUrls.some(item => item.type === social)));
   }, [url]);
   
   useEffect(() => {
     fetchUser();
     fetchUrl();
   }, []); // เพิ่ม dependency [] เพื่อให้เรียกใช้เพียงครั้งเดียวเมื่อ component โหลด
+
+  
 
   return (
       <div className='flex flex-row justify-between items-start p-10 px-[15rem] w-full'>
@@ -261,26 +266,30 @@ const EditPage = () => {
           </div>
         <div>
           <div className="pt-5 p-5">
-            {url.map((items, index) => (
-              <div key={index} className="flex flex-row justify-between">
-                <div className="flex flex-row gap-3 items-center pb-5">
-                  <div>
-                    {items.link?.startsWith("https://www.facebook.com/")? <FaFacebook style={{ width: "25px", height: "25px" }} /> : ""}
-                    {items.link?.startsWith("https://www.instagram.com/")? <InstagramLogoIcon style={{ width: "25px", height: "25px" }} /> : ""}
-                    {items.link?.startsWith("https://twitter.com/")? <TwitterLogoIcon style={{ width: "25px", height: "25px" }} /> : ""}
-                    {items.link?.includes("deviantart.com")? <FaDeviantart style={{ width: "25px", height: "25px" }} /> : ""}
+            {url.map((items, index) => {
+              if(items.userId === userId) {
+                return (
+                  <div key={index} className="flex flex-row justify-between">
+                    <div className="flex flex-row gap-3 items-center pb-5">
+                      <div>
+                        {items.link?.startsWith("https://www.facebook.com/")? <FaFacebook style={{ width: "25px", height: "25px" }} /> : ""}
+                        {items.link?.startsWith("https://www.instagram.com/")? <InstagramLogoIcon style={{ width: "25px", height: "25px" }} /> : ""}
+                        {items.link?.startsWith("https://twitter.com/")? <TwitterLogoIcon style={{ width: "25px", height: "25px" }} /> : ""}
+                        {items.link?.includes("deviantart.com")? <FaDeviantart style={{ width: "25px", height: "25px" }} /> : ""}
 
-                  </div>
-                  <Link href={items.link || ""} target="_blank"
-                  className="text-blue-500 font-medium text-lg">
-                    {items.link}
-                  </Link>
+                      </div>
+                      <Link href={items.link || ""} target="_blank"
+                      className="text-blue-500 font-medium text-lg">
+                        {items.link}
+                      </Link>
+                    </div>
+                    <Button onClick={() => DeleteSocial(items.id)}>
+                      <Cross1Icon style={{ width: "25px", height: "25px" }} />
+                    </Button>
                 </div>
-                <Button onClick={() => DeleteSocial(items.id)}>
-                  <Cross1Icon style={{ width: "25px", height: "25px" }} />
-                </Button>
-              </div>
-            ))}
+                )
+              }
+            })}
           </div>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -296,9 +305,10 @@ const EditPage = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
+                      
                       {availableSocials
                         .filter(
-                          (social) => !url.some((item) => item.type === social) // กรอง Social ที่ยังไม่ได้เพิ่ม
+                          (social) => !userUrls.some((item) => item.type === social) // กรอง Social ที่ยังไม่ได้เพิ่ม
                         )
                         .map((social, index) => (
                           <DropdownMenuItem

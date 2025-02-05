@@ -43,19 +43,23 @@ export async function GET(
 }
 
 // PUT API
-export async function PUT(_req: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function PUT(req: Request, { params }: { params: { id: string } }) {
+  const { id } = params; // อ่านค่า ID จาก URL params
+  const body = await req.json(); // อ่านค่า status จาก request body
+  const { status } = body;
 
-  if (!id) {
-    return NextResponse.json({ error: "Invalid or missing ID" }, { status: 400 });
+  if (!id || !status) {
+    return NextResponse.json({ error: "Invalid or missing ID or status" }, { status: 400 });
   }
 
+  console.log("Endpoint received status:", status);
+
   try {
+    const updatedStatus = status === ArtStatus.Publish ? ArtStatus.Private : ArtStatus.Publish;
+
     const artwork = await db.artwork.update({
       where: { id },
-      data: {
-        status: ArtStatus.Publish, // ใช้ Enum Prisma
-      },
+      data: { status: updatedStatus },
     });
 
     return NextResponse.json(artwork, { status: 200 });
@@ -63,20 +67,23 @@ export async function PUT(_req: Request, { params }: { params: { id: string } })
     console.error("PUT Error:", error);
 
     const message = error instanceof Error ? error.message : "Internal Server Error";
-    return NextResponse.json({ error: message || "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
-// DELETE API
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
 
-  if (!id) {
+// DELETE API
+export async function DELETE(req: Request) {
+  const body = await req.json();
+  const { artId } = body;
+  
+
+  if (!artId) {
     return NextResponse.json({ error: "Invalid or missing ID" }, { status: 400 });
   }
 
   try {
-    await db.artwork.delete({ where: { id } });
+    await db.artwork.delete({ where: { id: artId } });
     return NextResponse.json({ message: "Artwork deleted successfully" }, { status: 200 });
   } catch (error: unknown) {
     console.error("DEL Error:", error);
