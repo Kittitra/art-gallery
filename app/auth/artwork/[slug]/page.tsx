@@ -86,7 +86,6 @@ const ArtworkPage = () => {
   const [isPending, startTransition] = useTransition();
   const [isLikePending, startLikeTransition] = useTransition();
   const [isFollowPending, startFollowTransition] = useTransition();
-  const [isDeletePending, startDeleteTransition] = useTransition();
   const params = useParams();
   const slug = params.slug as string;
   const router = useRouter();
